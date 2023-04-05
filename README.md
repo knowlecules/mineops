@@ -1,4 +1,4 @@
-# MineOps
+# MineOps-api
 
 ## About
 
@@ -14,15 +14,15 @@ MineOps, the simplest way to provision and manage asic miners for multiple clien
 
 ### Installation
 
-Prior to starting – please make sure the file dcs_root.json has been properly configured.
+Prior to starting – please make sure the file dcs_root.json has been properly configured. see Appendix
 
 Install
 - nodejs
-- mongodb
+- mongodb (run as a service. install tools as well)
 - pm2 (*suggested) 
 
 Create database &quot;mineops_local&quot;
-open mongodb shell
+open mongodb shell 
 ```bash
 mongo
 ```
@@ -38,9 +38,10 @@ exit
 ```
 
 checkout source and install
-dependencies
+dependencies and required directories
 ```bash
 npm i
+mkdir tmp
 ```
 
 import dataCenterSettings (Copy dcs_root.json and edit the properties or you will have to edit directly
@@ -50,13 +51,143 @@ cd mineops/data
 mongoimport -c dataCenterSettings -d mineops_local --file dcs_root.json
 ```
 
+Go to mineops root and start using npm
 ```bash
+cd .. 
 npm start
 ```
 
-After logging in, go to the miners page and click the refresh button.
+or run in the background with pm2
+```bash
+pm2 start npm --name "mineops" -- start
+pm2 save
+pm2 logs --out
+```
 
-Appendix
+
+## Usage
+
+### Create an account
+* Open localhost:3000 in your browser.
+* Click sign up link on the login page.
+* Enter email, password and,...
+   * a comma delimited list of account names that will be used by this user on pools as well as be visible in the miner list pages when they login.
+
+<img src="client/images/mineops-signup.jpg" alt= "Signup to use local mineop" width="30%">
+
+
+Once set, this needs to be edited directly in 
+
+```bash
+nano ~/mineops/server/db.json
+```
+
+```json
+"User": {
+  "2": "{\"password\":\"$2a$10$rmYddZEvj3KZerAugYA/fu76UUMMzOBD8hibnCIxFPFHL5sr4QDV.\",\"validated\":true,\"group\":\"user\",\"email\":\"me@mineops.org\",\"accountName\":\"btcminer,ethminer,antminer\",\"id\":2}",
+},
+```
+
+Important properties in the above snippet
+- Set "validated" = true to activate the account
+- Set "group" = "admin" to see all discovered miners 
+
+Discover miners
+- login
+- navigate to list drop down and select list
+
+<img src="client/images/mineops-minersview-menu.jpg" alt= "Select miner view" width="30%">
+
+
+- click on the discover button (Can take a few minutes depending on the network size)
+
+<img src="client/images/mineops-miners-discover.jpg" alt= "Discover miners button" width="30%">
+
+- Refresh the page to see the miners
+- If the networkScanInterval is set then these machines are now being monitored
+- Let us know if a machine is missing. 
+
+You can use the api to verify that a missing miner is accessible
+```
+http://localhost:3000/state-check?ipAddress=192.168.1.160
+```
+
+## Features
+### Consumption filtering
+<img src="client/images/mineops-dashboard.jpg" alt= "Filter consumption by account name" width="50%">
+
+Use this page to:
+- Monitor consumption and hashrate
+- Filter monitoring by account name or machine type
+
+
+### Upload property edits
+<img src="client/images/mineops-propertyedit-modal.jpg" alt= "Download properties, edit and upload" width="30%">
+
+Use this page to:
+- Upload miner properties. Usually to patch positions or add serial numbers
+
+
+### Bulk updates 
+<img src="client/images/mineops-bulkupdate-modal.jpg" alt= "Bulk update pools, restart actions, purge data" width="30%">
+
+Use this page to perform bulk actions:
+- Update pools
+- Reboot
+- Update firmware (Requires downloading files to another repo and then configuring)
+- Remove from database
+- Set deployment date
+
+
+### Active provisioning
+<img src="client/images/mineops-provision.jpg" alt= "Provision using IP report button" width="50%">
+
+Use this page to:
+- Provision miners
+- locate miners
+- change location of miner
+
+### Miner monitoring 
+<img src="client/images/mineops-listing.jpg" alt= "Monitoring all miners" width="50%">
+
+Use this page to:
+- see miner state
+- sort using menu
+- locate poorly performing machines
+- navigate to machine directly or using reverse proxy server
+- reboot machine
+- see machine's logs
+- Export miner properties and reupload them
+- edit worker name (click)
+
+### Miner filtering
+<img src="client/images/mineops-filter-menu.jpg" alt= "Miner filtering instructions" width="50%">
+
+Use this page to:
+- Group machines of interest for bulk operations
+- Typical filter strings
+  - ^recent (show miners that failed during scan)
+  - L3 expr(hashrate&lt;400) (show l3s that are not performing well)
+
+
+### Miner layout view
+<img src="client/images/mineops-layout.jpg" alt= "Miner layout view" width="50%">
+
+Use this page to:
+- Group machines of interest for bulk operations
+
+### Daily hashrate chart 
+<img src="client/images/mineops-hashratechart-modal-z15.jpg" alt= "Miner layout view" width="50%">
+
+
+## Appendix
+
+### dataCenterSettings document 
+Sample to add to mongo. Edit dhcp settings 
+
+Import properties
+- setting networkScanInterval = 0 will disable scanning and associated auto features such as reboots etc... 
+- netmask must fit IP range
 
 ```json
 {
@@ -145,7 +276,7 @@ LOG_LEVEL_OPTIONS= ERROR, WARNING, LOG, INFO, DEBUG, ALL
 LOG_LEVEL=INFO
 MESSAGE_SERVICES=
 _NETWORK_DIAGNOSTIC={"type":"ping", "ipAddress":"8.8.8.8"}
-_MONGO_URL=mongodb+srv://mineops_admin:secretkey.mongodb.net/mineopsCentral?retryWrites=true&w=majority
+_MONGO_URL=mongodb+srv://mineops_admin:secretKey.mongodb.net/mineopsCentral?retryWrites=true&w=majority
 DEBUG=loopback:zzzdatasource
 UNSAFE_EDITS=true;  
 ```
