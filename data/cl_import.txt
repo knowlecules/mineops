@@ -1,0 +1,9 @@
+mongoimport -c dataCenterSettings -d mineops_local --file  dcs_exoblock.json
+mongoexport -c minerInfo -d mineops_local --jsonArray --out minerInfoDBD.json
+mongoimport -c minerInfo -d mineops_local --file  minerInfoDBD.json --jsonArray --legacy
+
+sudo pptpsetup --create exoblock --server 45.73.27.170 --username exoblock --password zxcvvcxz1234 --start
+
+sudo pon stcome
+sudo ip route add 192.168.0.0/21 via 192.168.89.1
+route add 192.168.10.0 mask 255.255.255.0 192.168.89.1

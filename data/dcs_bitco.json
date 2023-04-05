@@ -1,0 +1,43 @@
+{
+  "id": 1,
+  "minerIndex": 1,
+  "cabinetName": "EXO1.1",
+  "cabinetPosition": 75,
+  "staticAssignment": false,
+  "configureMode": 1,
+  "accountName": "0",
+  "enablePoolConfiguration": true,
+  "enableUpdatePoolOnDiscovery": false,
+  "enableDHCPServer": false,
+  "enableSlack": false,
+  "enableDiscoveryOnStartup": true,
+  "networkScanInterval": 240000,
+  "locationID": "EXO",
+  "locationName": "Exoblock, Montreal-Est",
+  "noReplyEmail": "noreply@investments.org",
+  "active":true,
+  "dhcpSettings": {
+    "range": ["192.168.11.2", "192.168.11.253"],
+    "netmask": "255.255.255.0",
+    "router": ["192.168.11.1"],
+    "broadcast": "192.168.11.255",
+    "server": "192.168.11.x",
+    "dns": ["8.8.8.8", "8.8.4.4"],
+    "hostname": "mineops",
+    "domainName": "rdc.local",
+    "timeServer": null,
+    "nameServer": null,
+    "maxMessageSize": 1500,
+    "leaseTime": 86400,
+    "renewalTime" : 60,
+    "rebindingTime" : 120,
+    "scanThrottleCount" : 20
+  },
+  "inactiveAlarmPercentage" : 3,
+  "email" : {
+      "from" : "MineOps support<support@exoblock.next>",
+      "to" : "hamdy@exoblock.net"
+  },
+  "machinesPerShelf" : "10",
+  "minerNumberFormat" : "RRPPP"
+}

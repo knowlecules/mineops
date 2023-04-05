@@ -1,0 +1,137 @@
+[
+    {
+        "hashAlgorithm": "SHA256",
+        "name": "Slushpool",
+        "stratum": "us-east.stratum.slushpool.com:3333",
+        "priority": 1,
+        "username": "<%=accountName%>.<%=minerName%><%=locationID%><%=workerTypeNumber%>",
+        "password": "x",
+        "ID": 1
+    },
+    {
+        "hashAlgorithm": "X11",
+        "name": "Prohashing",
+        "stratum": "prohashing.com:3333",
+        "priority": 1,
+        "username": "<%=accountName%>.<%=minerName%><%=locationID%><%=workerTypeNumber%>",
+        "password": "a=x11",
+        "ID": 3
+    },
+    {
+        "hashAlgorithm": "X11",
+        "name": "Nicehash",
+        "stratum": "nicehash.com:3333",
+        "priority": 2,
+        "username": "<%=accountName%>.<%=minerName%><%=locationID%><%=workerTypeNumber%>",
+        "password": "a=x11",
+        "ID": 4
+    },
+    {
+        "hashAlgorithm": "Blake(2b)",
+        "name": "Siamining",
+        "stratum": "us-east.siamining.com:3333",
+        "priority": 1,
+        "username": "<%=wallet.SIA%>.<%=minerName%><%=locationID%><%=workerTypeNumber%>",
+        "password": "x",
+        "ID": 5
+    },
+    {
+        "hashAlgorithm": "Scrypt",
+        "name": "Nicehash-Scrypt",
+        "stratum": "scrypt.usa.nicehash.com:3333",
+        "priority": 99,
+        "username": "<%=wallet.BTC%>.<%=minerName%><%=locationID%><%=workerTypeNumber%>",
+        "password": "x",
+        "ID": 6
+    },
+    {
+        "hashAlgorithm": "Scrypt",
+        "name": "Litecoinpool",
+        "stratum": "litecoinpool.org:3333",
+        "priority": 99,
+        "username": "<%=accountName%>.<%=minerName%><%=locationID%><%=workerTypeNumber%>",
+        "password": "x",
+        "ID": 7
+    },
+    {
+        "hashAlgorithm": "Scrypt",
+        "name": "Dynamic Pool",
+        "stratum": "pool.dynamicpool.com:4444",
+        "priority": 99,
+        "username": "<%=wallet.LTC%>",
+        "password": "n=<%=minerName%><%=locationID%><%=workerTypeNumber%>",
+        "ID": 8
+    },
+    {
+        "hashAlgorithm": "SHA256",
+        "name": "Antpool-BTC",
+        "stratum": "ss.antpool.com:3333",
+        "priority": 99,
+        "username": "<%=accountName%>.<%=minerName%><%=locationID%><%=workerTypeNumber%>",
+        "password": "x",
+        "ID": 9
+    },
+    {
+        "hashAlgorithm": "SHA256",
+        "name": "Antpool-BTC-SSL",
+        "stratum": "ss.antpool.com:443",
+        "priority": 99,
+        "username": "<%=accountName%>.<%=minerName%><%=locationID%><%=workerTypeNumber%>",
+        "password": "x",
+        "ID": 9
+    },
+    {
+        "hashAlgorithm": "SHA256",
+        "name": "Antpool-BTC-Opt",
+        "stratum": "ss.antpool.com:25",
+        "priority": 99,
+        "username": "<%=accountName%>.<%=minerName%><%=locationID%><%=workerTypeNumber%>",
+        "password": "x",
+        "ID": 9
+    },
+    {
+        "hashAlgorithm": "Scrypt",
+        "name": "Antpool-LTC",
+        "stratum": "stratum-ltc.antpool.com:8888",
+        "priority": 99,
+        "username": "<%=accountName%>.<%=minerName%><%=locationID%><%=workerTypeNumber%>",
+        "password": "x",
+        "ID": 10
+    },
+    {
+        "hashAlgorithm": "SHA256",
+        "name": "Antpool-BCC",
+        "stratum": "stratum-bcc.antpool.com:3333",
+        "priority": 99,
+        "username": "<%=accountName%>.<%=minerName%><%=locationID%><%=workerTypeNumber%>",
+        "password": "x",
+        "ID": 11
+    },
+    {
+        "hashAlgorithm": "CryptoNight",
+        "name": "Nanopool",
+        "stratum": "etn-us-east1.nanopool.org:13333",
+        "priority": 1,
+        "username": "<%=wallet.XMR%>",
+        "password": "x",
+        "ID": 12
+    },
+    {
+        "hashAlgorithm": "Scrypt",
+        "name": "Hashing",
+        "stratum": "ltc.hashing.com:3333",
+        "priority": 1,
+        "username": "<%=accountName%>.<%=minerName%><%=locationID%><%=workerTypeNumber%>",
+        "password": "x",
+        "ID": 13
+    },
+    {
+        "hashAlgorithm": "Tensority",
+        "name": "Antpool-Tensority",
+        "stratum": "stratum-btm.antpool.com:6666",
+        "priority": 2,
+        "username": "<%=accountName%>.<%=minerName%><%=locationID%><%=workerTypeNumber%>",
+        "password": "x",
+        "ID": 14
+    }
+]

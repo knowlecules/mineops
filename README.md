@@ -2,13 +2,117 @@
 
 ## About
 
-MineOps, an easier way to configure pools for asic miners. It can be triggered from a DHCP server or via a REST API (POST), `https://{IP_OR_NAME}/api/minerInfos/provisionMiners` with a payload of e.g. `{ "ips":["192.242.1.21, 192.242.1.22"], "minerConfigOptions": { "frequency": 351 }}`.
+MineOps, the simplest way to provision and manage asic miners for multiple clients. 
 
-## Development
+## Requirements
 
-If you are running a version of node that is pre version 7, install npm 5 globally, `npm install npm -g`. This is required so that the `package-lock.json` file gets updated.
+- nodejs
+- mongo
+- raspberry PI or better
+- git 
 
-### Debugging
+
+### Installation
+
+Prior to starting – please make sure the file dcs_root.json has been properly configured.
+
+Install
+- nodejs
+- mongodb
+- pm2 (*suggested) 
+
+Create database &quot;mineops_local&quot;
+open mongodb shell
+```bash
+mongo
+```
+
+create database
+```bash
+use mineops_local
+```
+
+close mongo shell
+```bash
+exit
+```
+
+checkout source and install
+dependencies
+```bash
+npm i
+```
+
+import dataCenterSettings (Copy dcs_root.json and edit the properties or you will have to edit directly
+in mongo)
+```bash
+cd mineops/data
+mongoimport -c dataCenterSettings -d mineops_local --file dcs_root.json
+```
+
+```bash
+npm start
+```
+
+After logging in, go to the miners page and click the refresh button.
+
+Appendix
+
+```json
+{
+    "minerIndex" : 356262,
+    "cabinetName" : "DH1.7",
+    "cabinetPosition" : 52,
+    "workerTypeNumber" : "07052",
+    "staticAssignment" : true,
+    "configureMode" : 1,
+    "accountName" : "mineops",
+    "enablePoolConfiguration" : true,
+    "enableDHCPServer" : false,
+    "enableSlack" : true,
+    "enableDiscoveryOnStartup" : false,
+    "networkScanInterval" : 300000,
+    "locationID" : "DBD",
+    "locationName" : "Deep Block Data, St-Just",
+    "noReplyEmail" : "noreply@mineops.org",
+    "active" : true,
+    "dhcpSettings" : {
+            "range" : [
+                    "192.168.0.2",
+                    "192.168.7.253"
+            ],
+            "netmask" : "255.255.248.0",
+            "router" : [
+                    "192.168.0.1"
+            ],
+            "broadcast" : "192.168.15.255",
+            "server" : "192.168.7.x",
+            "dns" : [
+                    "8.8.8.8",
+                    "8.8.4.4"
+            ],
+            "hostname" : "mineops",
+            "domainName" : "rdc.local",
+            "timeServer" : null,
+            "nameServer" : null,
+            "maxMessageSize" : 1500,
+            "leaseTime" : 86400,
+            "renewalTime" : 60,
+            "rebindingTime" : 120,
+            "scanThrottleCount" : 200
+    },
+    "enableProvisionOnDetect" : true,
+    "machinesPerShelf" : "6",
+    "minerNumberFormat" : "RRSSP",
+    "inactiveAlarmPercentage" : 3,
+    "email" : {
+            "from" : "Mineops support<support@mineops.org>",
+            "to" : "jason.k@mineops.org"
+    },
+    "availableKilowatts" : 1200
+}
+
+```
 
 * To debug in Visual Studio Code:
   * Select the Debug MineOps configuration (default configuration) then press F5.
@@ -41,7 +145,7 @@ LOG_LEVEL_OPTIONS= ERROR, WARNING, LOG, INFO, DEBUG, ALL
 LOG_LEVEL=INFO
 MESSAGE_SERVICES=
 _NETWORK_DIAGNOSTIC={"type":"ping", "ipAddress":"8.8.8.8"}
-_MONGO_URL=mongodb+srv://digger_admin:GinRLvppH35bbe6@digger.av05u.mongodb.net/diggerCentral?retryWrites=true&w=majority
+_MONGO_URL=mongodb+srv://mineops_admin:GinRLvppH35bbe6@mineops.av05u.mongodb.net/mineopsCentral?retryWrites=true&w=majority
 DEBUG=loopback:zzzdatasource
 UNSAFE_EDITS=true;  
 ```

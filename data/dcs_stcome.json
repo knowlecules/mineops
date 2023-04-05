@@ -1,0 +1,52 @@
+{
+    "minerIndex" : 356262,
+    "cabinetName" : "DH1.7",
+    "cabinetPosition" : 52,
+    "workerTypeNumber" : "07052",
+    "staticAssignment" : true,
+    "configureMode" : 1,
+    "accountName" : "deepblockdata",
+    "enablePoolConfiguration" : true,
+    "enableDHCPServer" : false,
+    "enableSlack" : true,
+    "enableDiscoveryOnStartup" : false,
+    "networkScanInterval" : 0,
+    "locationID" : "DBD",
+    "locationName" : "Deep Block Data, St-Come-Liniere",
+    "noReplyEmail" : "noreply@investments.org",
+    "active" : true,
+    "dhcpSettings" : {
+            "range" : [
+                    "192.168.0.2",
+                    "192.168.7.253"
+            ],
+            "netmask" : "255.255.248.0",
+            "router" : [
+                    "192.168.0.1"
+            ],
+            "broadcast" : "192.168.15.255",
+            "server" : "192.168.7.x",
+            "dns" : [
+                    "8.8.8.8",
+                    "8.8.4.4"
+            ],
+            "hostname" : "mineops",
+            "domainName" : "rdc.local",
+            "timeServer" : null,
+            "nameServer" : null,
+            "maxMessageSize" : 1500,
+            "leaseTime" : 86400,
+            "renewalTime" : 60,
+            "rebindingTime" : 120,
+            "scanThrottleCount" : 200
+    },
+    "enableProvisionOnDetect" : true,
+    "machinesPerShelf" : "6",
+    "minerNumberFormat" : "RRSSP",
+    "inactiveAlarmPercentage" : 3,
+    "email" : {
+            "from" : "MineOps support<support@investments.org>",
+            "to" : "jason.k@investments.org"
+    },
+    "availableKilowatts" : 1200
+}

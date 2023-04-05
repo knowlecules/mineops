@@ -1,5 +1,5 @@
 {
-  "name": "digger",
+  "name": "mineops",
   "version": "1.0.0",
   "main": "server/server.js",
   "engines": {
@@ -108,8 +108,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git remote add origin https://intelnick@bitbucket.org/intelnick/digger.git"
+    "url": "git remote add origin https://intelnick@bitbucket.org/intelnick/mineops.git"
   },
   "license": "UNLICENSED",
-  "description": "digger"
+  "description": "mineops"
 }

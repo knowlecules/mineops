@@ -1,0 +1,50 @@
+{
+  "id": 1,
+  "minerIndex" : 53366,
+  "cabinetName" : "DH4.R0901",
+  "cabinetPosition" : 6,
+  "staticAssignment" : true,
+  "configureMode" : 1,
+  "accountName" : "csmbitcoin",
+  "enablePoolConfiguration" : true,
+  "enableUpdatePoolOnDiscovery" : false,
+  "enableDHCPServer" : false,
+  "enableSlack" : true,
+  "enableDiscoveryOnStartup" : false,
+  "networkScanInterval" : 600000,
+  "locationID" : "RDC",
+  "locationName" : "Root, Baie d'Urfe",
+  "noReplyEmail" : "noreply@investments.org",
+  "active" : true,
+  "dhcpSettings" : {
+          "range" : [
+                  "192.168.0.2",
+                  "192.168.15.253"
+          ],
+          "netmask" : "255.255.240.0",
+          "router" : [
+                  "192.168.0.1"
+          ],
+          "broadcast" : "192.168.15.255",
+          "server" : "192.168.7.x",
+          "dns" : [
+                  "8.8.8.8",
+                  "8.8.4.4"
+          ],
+          "hostname" : "mineops",
+          "domainName" : "rdc.local",
+          "timeServer" : null,
+          "nameServer" : null,
+          "maxMessageSize" : 1500,
+          "leaseTime" : 86400,
+          "renewalTime" : 60,
+          "rebindingTime" : 120,
+          "scanThrottleCount" : 20
+  },
+  "inactiveAlarmPercentage" : 1,
+  "email" : {
+          "from" : "MineOps support<support@investments.org>",
+          "to" : "jason.k@investments.org"
+  }
+}
+
