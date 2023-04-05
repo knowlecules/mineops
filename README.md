@@ -114,7 +114,7 @@ http://localhost:3000/state-check?ipAddress=192.168.1.160
 
 ## Features
 ### Consumption filtering
-<img src="client/images/mineops-dashboard.jpg" alt= "Filter consumption by account name" width="50%">
+<img src="client/images/mineops-dashboard.jpg" alt= "Filter consumption by account name" width="80%">
 
 Use this page to:
 - Monitor consumption and hashrate
@@ -140,7 +140,7 @@ Use this page to perform bulk actions:
 
 
 ### Active provisioning
-<img src="client/images/mineops-provision.jpg" alt= "Provision using IP report button" width="50%">
+<img src="client/images/mineops-provision.jpg" alt= "Provision using IP report button" width="80%">
 
 Use this page to:
 - Provision miners
@@ -148,7 +148,7 @@ Use this page to:
 - change location of miner
 
 ### Miner monitoring 
-<img src="client/images/mineops-listing.jpg" alt= "Monitoring all miners" width="50%">
+<img src="client/images/mineops-listing.jpg" alt= "Monitoring all miners" width="80%">
 
 Use this page to:
 - see miner state
@@ -161,7 +161,7 @@ Use this page to:
 - edit worker name (click)
 
 ### Miner filtering
-<img src="client/images/mineops-filter-menu.jpg" alt= "Miner filtering instructions" width="50%">
+<img src="client/images/mineops-filter-menu.jpg" alt= "Miner filtering instructions" width="80%">
 
 Use this page to:
 - Group machines of interest for bulk operations
@@ -171,13 +171,13 @@ Use this page to:
 
 
 ### Miner layout view
-<img src="client/images/mineops-layout.jpg" alt= "Miner layout view" width="50%">
+<img src="client/images/mineops-layout.jpg" alt= "Miner layout view" width="80%">
 
 Use this page to:
 - Group machines of interest for bulk operations
 
 ### Daily hashrate chart 
-<img src="client/images/mineops-hashratechart-modal-z15.jpg" alt= "Miner layout view" width="50%">
+<img src="client/images/mineops-hashratechart-modal-z15.jpg" alt= "Miner layout view" width="80%">
 
 
 ## Appendix
