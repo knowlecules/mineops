@@ -1,0 +1,31 @@
+{
+  "memoryDs": {
+    "name": "memoryDs",
+    "connector": "memory",
+    "file": "./server/db.json"
+  },
+  "localDs": {
+    "name": "localDs",
+    "connector": "mongodb",
+    "port": 27017,
+    "host": "localhost",
+    "database": "mineops_local"
+  },
+  "emailDs": {
+    "name": "emailDs",
+    "connector": "mail",
+    "transports" : [{
+      "type": "smtp",
+      "host": "smtp.private.com",
+      "secure": false,
+      "port": 587,
+      "tls": {
+        "rejectUnauthorized": false
+      },
+      "auth": {
+        "user": "",
+        "pass": ""
+      }
+    }]
+  }
+}

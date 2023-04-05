@@ -1,0 +1,10 @@
+pool1=${pools[0].stratum || ""}&
+worker1=${pools[0].username || ""}&
+passwd1=${pools[0].password || ""}&
+pool2=${pools[1].stratum || ""}&
+worker2=${pools[1].username || ""}&
+passwd2=${pools[1].password || ""}&
+pool3=${pools[2].stratum || ""}&
+worker3=${pools[2].username || ""}&
+passwd3=${pools[2].password || ""}&
+mode=1

@@ -1,0 +1,23 @@
+{
+  "name": "wallet",
+  "plural": "wallets",
+  "base": "PersistedModel",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "walletID": {
+      "type": "string",
+      "id": true
+    },
+    "coinCode": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

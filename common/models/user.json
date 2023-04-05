@@ -1,0 +1,42 @@
+{
+  "name": "user",
+  "base": "User",
+  "idInjection": true,
+  "restrictResetPasswordTokenScope": true,
+  "emailVerificationRequired": true,
+  "properties": {
+    "accountName": {
+      "type": "array",
+      "required": true,
+      "default": [
+        "investmentsorg"
+      ]
+    },
+    "filter": {
+      "type": "array",
+      "required": false
+    },
+    "validated": {
+      "type": "boolean",
+      "required": false,
+      "default": false
+    },
+    "group": {
+      "type": "string",
+      "default": [
+        "user"
+      ]
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [
+    {
+      "accessType": "READ",
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "ALLOW"
+    }
+  ],
+  "methods": {}
+}

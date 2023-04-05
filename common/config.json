@@ -1,0 +1,2244 @@
+{
+  "webPort": 3000,
+  "proxyPort": 3050,
+  "socketPort": 3080,
+  "apiUrl": "http://localhost:3000/api/",
+  "sshUser": "root",
+  "sshPassword": "admin",
+  "minerApis": {
+    "Antminer" : {
+      "qualifier": "",
+      "user" : "root",
+      "password" : "root",
+      "sshUser": "root",
+      "sshPassword": "admin",
+      "routes" :{ 
+        "setMinerSettings":{"url" : "/cgi-bin/set_miner_conf.cgi","method":"POST", "preAuth":true},
+        "setNetworkSettings":{"url" : "/cgi-bin/set_network_conf.cgi","method":"POST", "preAuth":true},
+        "getNetworkDiagnostics":{"url" : "/cgi-bin/network_diag.cgi","method":"POST", "preAuth":true},
+        "getKernelLogs":{"url":"/cgi-bin/get_kernel_log.cgi","method":"GET", "preAuth":true},
+        "getMinerSettings":{"url":"/cgi-bin/get_miner_conf.cgi","method":"GET", "preAuth":true},
+        "getMinerStatus":{"url":"/cgi-bin/get_miner_status.cgi","method":"GET", "preAuth":true},
+        "getMinerSystemInfo":{"url":"/cgi-bin/get_system_info.cgi","method":"GET", "preAuth":true},
+        "rebootMiner":{"url":"/cgi-bin/reboot.cgi","method":"GET", "preAuth":true},
+        "resetMiner":{"url":"/cgi-bin/reset_conf.cgi","method":"GET", "preAuth":true},
+        "killMiner":{"url":"/cgi-bin/kill_bmminer.cgi","method":"GET", "preAuth":true},
+        "minerFirmwareUpdate":{"url":"/cgi-bin/upgrade_clear.cgi","method":"POST", "preAuth":true},
+        "minerLandingPage":{"url":"/cgi-bin/minerStatus.cgi","method":"GET", "preAuth":true},
+        "enableSSH":{"url":"/cgi-bin/ssh.cgi","method":"POST","data":"action=1&status=0&port=22", "preAuth":true}
+      },
+      "logErrors" :[
+        {"name":"powerInsufficient", "message":"Check the power supply and the requirements for the miner."
+          , "matches" :["check_asic_number_with_power_on.*find 0 asic, times 5", "ERROR_SOC_INIT"]},
+        {"name":"tempSensorType", "message":"Wrong temperature sensor type. Verify firmware."
+          , "matches" :["is_temp_sensor_type_correct: Wrong temp sensor type", "ERROR_TEMP_LOST"]},
+        {"name":"tempSensorCorrupt", "message":"Environment is too cold!"
+          , "matches" :["can get NONE temp info or temp value abnormal", "ERROR_TEMP_LOST"]},
+        {"name":"ubiRead", "message":"Controller PEB read failed. Check voltages, controller and firmware."
+          , "matches" :[" ubi_io_read.*from PEB"]},
+        {"name":"ubiFailedResponse", "message":"Controller I2C read failed. Check voltages, controller and firmware."
+          , "matches" :[" ubi_io_read.*from PEB"]},
+        {"name":"tempTooHot", "message":"Miner is too hot."
+          , "matches" :["ERROR_TEMP_TOO_HIGH"]},
+        {"name":"powerSupplyFailure", "message":"Power supply failed. Replace if necessary."
+          , "matches" :["ERROR_POWER_LOST"]}
+      ],
+      "cgminerCommands" : ["summary", "pools", "stats", "version"]
+    },
+    "Antminer_X19" : {
+      "qualifier": "",
+      "user" : "root",
+      "password" : "root",
+      "sshUser": "root",
+      "sshPassword": "admin",
+      "routes" :{ 
+        "setMinerSettings":{"url" : "/cgi-bin/set_miner_conf.cgi","method":"POST", "preAuth":true},
+        "setNetworkSettings":{"url" : "/cgi-bin/set_network_conf.cgi","method":"POST", "preAuth":true},
+        "getNetworkDiagnostics":{"url" : "/cgi-bin/network_diag.cgi","method":"POST", "preAuth":true},
+        "getKernelLogs":{"url":"/cgi-bin/log.cgi","method":"GET", "preAuth":true},
+        "getMinerSettings":{"url":"/cgi-bin/pools.cgi","method":"GET", "preAuth":true},
+        "getMinerStatus":{"zzz_url":"/cgi-bin/stats.cgi","method":"GET", "preAuth":true},
+        "getMinerSystemInfo":{"url":"/cgi-bin/get_system_info.cgi","method":"GET", "preAuth":true},
+        "rebootMiner":{"url":"/cgi-bin/reboot.cgi","method":"GET", "preAuth":true},
+        "resetMiner":{"url":"/cgi-bin/reset_conf.cgi","method":"GET", "preAuth":true},
+        "killMiner":{"url":"/cgi-bin/kill_bmminer.cgi","method":"GET", "preAuth":true},
+        "minerFirmwareUpdate":{"url":"/cgi-bin/upgrade_clear.cgi","method":"POST", "preAuth":true},
+        "minerLandingPage":{"url":"/#dashboard","method":"GET", "preAuth":true},
+        "enableSSH":{"url":"/cgi-bin/ssh.cgi","method":"POST","data":"action=1&status=0&port=22", "preAuth":true}
+      },
+      "logErrors" :[
+        {"name":"powerInsufficient", "message":"Check the power supply and the requirements for the miner."
+          , "matches" :["check_asic_number_with_power_on.*find 0 asic, times 5", "ERROR_SOC_INIT"]},
+        {"name":"tempSensorType", "message":"Wrong temperature sensor type. Verify firmware."
+          , "matches" :["is_temp_sensor_type_correct: Wrong temp sensor type", "ERROR_TEMP_LOST"]},
+        {"name":"tempSensorCorrupt", "message":"Environment is too cold!"
+          , "matches" :["can get NONE temp info or temp value abnormal", "ERROR_TEMP_LOST"]},
+        {"name":"ubiRead", "message":"Controller PEB read failed. Check voltages, controller and firmware."
+          , "matches" :[" ubi_io_read.*from PEB"]},
+        {"name":"ubiFailedResponse", "message":"Controller I2C read failed. Check voltages, controller and firmware."
+          , "matches" :[" ubi_io_read.*from PEB"]},
+        {"name":"tempTooHot", "message":"Miner is too hot."
+          , "matches" :["ERROR_TEMP_TOO_HIGH"]},
+        {"name":"powerSupplyFailure", "message":"Power supply failed. Replace if necessary."
+          , "matches" :["ERROR_POWER_LOST"]},
+        {"name":"hashBoardFailure", "message":"Hash board powered off when not all chips found."
+          , "matches" :["will power off hash board"]}  
+      ],
+      "cgminerCommands" : ["summary", "pools", "stats", "version"]
+    },
+    "Antminer_antpool" : {
+      "qualifier": "antpool_",
+      "user" : "root",
+      "password" : "root",
+      "sshUser": "root",
+      "sshPassword": "admin",
+      "routes" :{ 
+        "setMinerSettings":{"url" : "/cgi-bin/set_miner_conf.cgi","method":"POST", "preAuth":true},
+        "setNetworkSettings":{"url" : "/cgi-bin/set_network_conf.cgi","method":"POST", "preAuth":true},
+        "getNetworkDiagnostics":{"url" : "/cgi-bin/network_diag.cgi","method":"POST", "preAuth":true},
+        "getKernelLogs":{"url":"/cgi-bin/get_kernel_log.cgi","method":"GET", "preAuth":true},
+        "getMinerSettings":{"url":"/cgi-bin/get_miner_conf.cgi","method":"GET", "preAuth":true},
+        "getMinerStatus":{"url":"/cgi-bin/get_miner_status.cgi","method":"GET", "preAuth":true},
+        "getMinerSystemInfo":{"url":"/cgi-bin/get_system_info.cgi","method":"GET", "preAuth":true},
+        "rebootMiner":{"url":"/cgi-bin/reboot.cgi","method":"GET", "preAuth":true},
+        "resetMiner":{"url":"/cgi-bin/reset_conf.cgi","method":"GET", "preAuth":true},
+        "killMiner":{"url":"/cgi-bin/kill_bmminer.cgi","method":"GET", "preAuth":true},
+        "minerFirmwareUpdate":{"url":"/cgi-bin/upgrade_clear.cgi","method":"POST", "preAuth":true},
+        "minerLandingPage":{"url":"/cgi-bin/minerStatus.cgi","method":"GET", "preAuth":true},
+        "enableSSH":{"url":"/cgi-bin/ssh.cgi","method":"POST","data":"action=1&status=0&port=22", "preAuth":true}
+      },
+      "logErrors" :[
+        {"name":"powerInsufficient", "message":"Check the power supply and the requirements for the miner."
+          , "matches" :["check_asic_number_with_power_on.*find 0 asic, times 5", "ERROR_SOC_INIT"]},
+        {"name":"tempSensorType", "message":"Wrong temperature sensor type. Verify firmware."
+          , "matches" :["is_temp_sensor_type_correct: Wrong temp sensor type", "ERROR_TEMP_LOST"]},
+        {"name":"tempSensorCorrupt", "message":"Environment is too cold!"
+          , "matches" :["can get NONE temp info or temp value abnormal", "ERROR_TEMP_LOST"]},
+        {"name":"ubiRead", "message":"Controller PEB read failed. Check voltages, controller and firmware."
+          , "matches" :[" ubi_io_read.*from PEB"]},
+        {"name":"ubiFailedResponse", "message":"Controller I2C read failed. Check voltages, controller and firmware."
+          , "matches" :[" ubi_io_read.*from PEB"]},
+        {"name":"tempTooHot", "message":"Miner is too hot."
+          , "matches" :["ERROR_TEMP_TOO_HIGH"]},
+        {"name":"powerSupplyFailure", "message":"Power supply failed. Replace if necessary."
+          , "matches" :["ERROR_POWER_LOST"]}
+      ]
+    },
+    "Antminer_updater" : {
+      "qualifier": "updater_",
+      "user" : "root",
+      "password" : "root",
+      "sshUser": "root",
+      "sshPassword": "admin",
+      "routes" :{ 
+        "setMinerSettings":{"url" : "/cgi-bin/set_miner_conf_custom.cgi","method":"POST", "preAuth":true},
+        "setNetworkSettings":{"url" : "/cgi-bin/set_network_conf.cgi","method":"POST", "preAuth":true},
+        "getNetworkDiagnostics":{"url" : "/cgi-bin/network_diag.cgi","method":"POST", "preAuth":true},
+        "getKernelLogs":{"url":"/cgi-bin/get_kernel_log.cgi","method":"GET", "preAuth":true},
+        "getMinerSettings":{"url":"/cgi-bin/get_miner_conf.cgi","method":"GET", "preAuth":true},
+        "getMinerStatus":{"url":"/cgi-bin/get_miner_status.cgi","method":"GET", "preAuth":true},
+        "getMinerSystemInfo":{"url":"/cgi-bin/get_system_info.cgi","method":"GET", "preAuth":true},
+        "rebootMiner":{"url":"/cgi-bin/reboot.cgi","method":"GET", "preAuth":true},
+        "resetMiner":{"url":"/cgi-bin/reset_conf.cgi","method":"GET", "preAuth":true},
+        "killMiner":{"url":"/cgi-bin/kill_cgminer.cgi","method":"GET", "preAuth":true},
+        "minerFirmwareUpdate":{"url":"/cgi-bin/upgrade_clear.cgi","method":"POST", "preAuth":true},
+        "minerLandingPage":{"url":"","method":"GET", "preAuth":true},
+        "enableSSH":{"url":"/cgi-bin/ssh.cgi","method":"POST","data":"action=1&status=0&port=22", "preAuth":true}
+      },
+      "logErrors" :[
+        {"name":"powerInsufficient", "message":"Check the power supply and the requirements for the miner."
+          , "matches" :["check_asic_number_with_power_on.*find 0 asic, times 5", "ERROR_SOC_INIT"]},
+        {"name":"tempSensorType", "message":"Wrong temperature sensor type. Verify firmware."
+          , "matches" :["is_temp_sensor_type_correct: Wrong temp sensor type", "ERROR_TEMP_LOST"]},
+        {"name":"tempSensorCorrupt", "message":"Card not providing valid temperature. Verify firmware."
+          , "matches" :["can get NONE temp info or temp value abnormal", "ERROR_TEMP_LOST"]},
+        {"name":"tempTooHot", "message":"Miner is too hot."
+          , "matches" :["ERROR_TEMP_TOO_HIGH"]},
+        {"name":"ubiRead", "message":"Controller read failed. Check voltages, controller and firmware."
+        , "matches" :["Failed to read I2C command response"]}
+      ]
+    },
+    "Dragonmint" : {
+      "qualifier": "",
+      "user" : "admin",
+      "password" : "dragonadmin",
+      "routes" :{ 
+        "setMinerSettings":{"url":"/api/updatePools","method":"POST"},
+        "getKernelLogs":{"url":"/api/logs","method":"POST"},
+        "getMinerSettings":{"url":"/api/pools","method":"POST"},
+        "getMinerStatus":{"url":"/api/summary","method":"POST"},
+        "getMinerSystemInfo":{"url":"/api/overview","method":"POST"},
+        "rebootMiner":{"url":"/api/reboot","method":"POST"},
+        "resetMiner":{"url":"/api/reset","method":"POST"},
+        "killMiner":{"url":"/api/poweroff","method":"POST"},
+        "minerFirmwareUpdate":{"url":"/upgrade/upload","method":"POST"},
+        "minerLandingPage":{"url":"","method":"GET"}
+      },
+      "logErrors" :[]
+    },
+    "Innosilicon" : {
+      "qualifier": "",
+      "user" : "admin",
+      "password" : "admin",
+      "routes" :{ 
+        "getMinerLogin":{"url":"/api/auth","method":"POST", "form" : {"username":"admin","password":"admin"}, "headers":{"Content-Type":"application/x-www-form-urlencoded"}},
+        "setMinerSettings":{"url":"/api/updatePools","method":"POST"},
+        "getKernelLogs":{"url":"/api/logs","method":"POST"},
+        "getMinerSettings":{"url":"/api/pools","method":"POST"},
+        "getMinerStatus":{"url":"/api/summary","method":"POST"},
+        "getMinerSystemInfo":{"url":"/api/overview","method":"POST"},
+        "rebootMiner":{"url":"/api/reboot","method":"POST"},
+        "resetMiner":{"url":"/api/reset","method":"POST"},
+        "killMiner":{"url":"/api/poweroff","method":"POST"},
+        "minerFirmwareUpdate":{"url":"/upgrade/upload","method":"POST"},
+        "minerLandingPage":{"url":"","method":"GET"}
+      },
+      "logErrors" :[],
+      "cgminerCommands" : ["version", "summary", "stats"]
+    },
+    "Whatsminer" : {
+      "qualifier": "",
+      "user" : "admin",
+      "password" : "admin",
+      "protocol" : "https",
+      "routes" :{ 
+        "getMinerLogin":{"url":"/cgi-bin/luci/","method":"POST", "form" : {"luci_username":"admin","luci_password":"admin"}},
+        "setMinerSettings":{"url":"/cgi-bin/luci/admin/network/btminer","method":"POST", "headers":{"Content-Type":"multipart/form-data;"}},
+        "getKernelLogs":{"url":"/cgi-bin/luci/admin/status/minerlog","method":"GET", "docType":"HTML"},
+        "getMinerSettings":{"url":"/api/pools","method":"POST"},
+        "getMinerStatus":{"url":"","method":""},
+        "getMinerSystemInfo":{"url":"","method":""},
+        "rebootMiner":{"url":"/cgi-bin/luci//admin/system/reboot/call","method":"POST"},
+        "resetMiner":{"url":"","method":""},
+        "restartPool":{"url":"/cgi-bin/luci/servicectl/restart/pools","method":"POST", "noAuth": true},
+        "killMiner":{"url":"/api/poweroff","method":"POST"},
+        "minerFirmwareUpdate":{"url":"/upgrade/upload","method":"POST"},
+        "minerLandingPage":{"url":"","method":"GET"}
+      },
+      "logErrors" :[
+        {"name":"chipTempFault", "message":"Card shutdown by chip temperature sensor"
+          , "matches" :["slot\\d\\s+chip.*temp protected"]},
+        {"name":"overCurrent", "message":"Power input over current. Swap the PSU"
+          , "matches" :["0x40001000000"]},
+        {"name":"overHeat", "message":"Power output over-temperature protection. Check for heating issues."
+        , "matches" :["0x40000000001"]},
+        {"name":"fanFault", "message":"Power fan warning. Replace fan."
+          , "matches" :["0x20000000000"]},
+        {"name":"powerFanFault", "message":"PSU is overheating. Replace PSU fan."
+          , "matches" :["0x60000000000", "0x40000000000"]}
+      ],
+      "cgminerCommands" : ["summary", "pools", "devs", "devdetails"],
+      "rebootOnUpdate": true
+    },
+    "Whatsminer_CG" : {
+      "qualifier": "",
+      "user" : "admin",
+      "password" : "admin",
+      "protocol" : "https",
+      "routes" :{ 
+        "getMinerLogin":{"url":"/cgi-bin/luci/","method":"POST", "form" : {"luci_username":"admin","luci_password":"admin"}},
+        "setMinerSettings":{"url":"/cgi-bin/luci/admin/network/cgminer","method":"POST", "headers":{"Content-Type":"multipart/form-data;"}},
+        "getKernelLogs":{"url":"/cgi-bin/luci/admin/status/minerlog","method":"GET", "docType":"HTML"},
+        "getMinerSettings":{"url":"/api/pools","method":"POST"},
+        "getMinerStatus":{"url":"","method":""},
+        "getMinerSystemInfo":{"url":"","method":""},
+        "rebootMiner":{"url":"/cgi-bin/luci//admin/system/reboot/call","method":"POST"},
+        "resetMiner":{"url":"","method":""},
+        "restartPool":{"url":"/cgi-bin/luci/servicectl/restart/pools","method":"POST", "noAuth": true},
+        "killMiner":{"url":"/api/poweroff","method":"POST"},
+        "minerFirmwareUpdate":{"url":"/upgrade/upload","method":"POST"},
+        "minerLandingPage":{"url":"","method":"GET"}
+      },
+      "logErrors" :[
+        {"name":"chipTempFault", "message":"Card shutdown by chip temperature sensor"
+          , "matches" :["slot\\d\\s+chip.*temp protected"]},
+        {"name":"overCurrent", "message":"Power input over current. Swap the PSU"
+          , "matches" :["0x40001000000"]},
+        {"name":"overHeat", "message":"Power output over-temperature protection. Check for heating issues."
+        , "matches" :["0x40000000001"]},
+        {"name":"fanFault", "message":"Power fan warning. Replace fan."
+          , "matches" :["0x20000000000"]},
+        {"name":"powerFanFault", "message":"PSU is overheating. Replace PSU fan."
+          , "matches" :["0x60000000000", "0x40000000000"]}
+      ],
+      "cgminerCommands" : ["version", "summary","pools", "devs", "stats", "config", "devdetails"],
+      "rebootOnUpdate": true
+    },
+    "AvalonMiner" : {
+      "qualifier": "",
+      "user" : "root",
+      "password" : "root",
+      "routes" :{ 
+        "getMinerLogin":{"url":"/login.cgi","method":"POST", "form" : {"username":"root","passwd":"root"}, "headers":{"Content-Type":"application/x-www-form-urlencoded"}},
+        "setMinerSettings":{"url":"/cgconf.cgi","method":"POST", "insecure":true},
+        "setNetworkSettings":{"url" : "/network.cgi","method":"POST", "insecure":true},
+        "getNetworkDiagnostics":{"url" : "/updatenetwork.cgi","method":"GET", "insecure":true},
+        "getKernelLogs":{"url":"/updatecglog.cgi","method":"GET", "insecure":true},
+        "getMinerSettings":{"url":"/updatecgconf.cgi","method":"GET", "insecure":true},
+        "getMinerStatus":{"url":"/updatedashboard.cgi","method":"GET", "insecure":true},
+        "getMinerSystemInfo":{"url":"/updatedashboard.cgi","method":"GET", "insecure":true},
+        "rebootMiner":{"url":"/reboot.cgi","method":"POST", "headers":{"Content-Type":"application/x-www-form-urlencoded"}},
+        "resetMiner":{"zzz_url":"/reset.cgi","method":"POST", "headers":{"Content-Type":"application/x-www-form-urlencoded"}},
+        "killMiner":{"url":"/api/poweroff","method":"POST"},
+        "minerFirmwareUpdate":{"url":"/upgrade/upload","method":"POST"},
+        "minerLandingPage":{"url":"/dashboard.cgi","method":"GET"}
+      },
+      "logErrors" :[],
+      "cgminerCommands" : ["version", "summary","pools", "devs", "stats", "config", "devdetails"],
+      "rebootOnUpdate": true
+    },
+    "AvalonMiner11" : {
+      "qualifier": "",
+      "user" : "root",
+      "password" : "root",
+      "routes" :{ 
+        "getMinerLogin":{"url":"/login.cgi","method":"POST", "form" : {"username":"root","passwd":"root"}, "headers":{"Content-Type":"application/x-www-form-urlencoded"}},
+        "setMinerSettings":{"url":"/cgconf.cgi","method":"POST", "insecure":true},
+        "setNetworkSettings":{"url" : "/network.cgi","method":"POST", "insecure":true},
+        "getNetworkDiagnostics":{"url" : "/updatenetwork.cgi","method":"GET", "insecure":true},
+        "getKernelLogs":{"url":"/updatecglog.cgi","method":"GET", "insecure":true},
+        "getMinerSettings":{"url":"/updatecgconf.cgi","method":"GET", "insecure":true},
+        "getMinerStatus":{"url":"/updatedashboard.cgi","method":"GET", "insecure":true},
+        "getMinerSystemInfo":{"url":"/updatedashboard.cgi","method":"GET", "insecure":true},
+        "rebootMiner":{"url":"/reboot.cgi","method":"POST", "headers":{"Content-Type":"application/x-www-form-urlencoded"}},
+        "resetMiner":{"zzz_url":"/reset.cgi","method":"POST", "headers":{"Content-Type":"application/x-www-form-urlencoded"}},
+        "killMiner":{"url":"/api/poweroff","method":"POST"},
+        "minerFirmwareUpdate":{"url":"/upgrade/upload","method":"POST"},
+        "minerLandingPage":{"url":"/dashboard.cgi","method":"GET"}
+      },
+      "logErrors" :[],
+      "cgminerCommands" : ["version", "summary","pools", "devs", "stats", "config", "devdetails"],
+      "rebootOnUpdate": true
+    },
+    "FsMiner" : {
+      "qualifier": "",
+      "user" : "admin",
+      "password" : "fusion",
+      "routes" :{ 
+        "setMinerSettings":{"url" : "/cgi-bin/set_miner_conf.cgi","method":"POST"},
+        "setNetworkSettings":{"url" : "/cgi-bin/set_network_conf.cgi","method":"POST"},
+        "getNetworkDiagnostics":{"url" : "/cgi-bin/network_diag.cgi","method":"POST"},
+        "getKernelLogs":{"url":"/cgi-bin/get_kernel_log.cgi","method":"GET"},
+        "getMinerSettings":{"url":"","method":"GET"},
+        "getMinerStatus":{"url":"","method":"GET"},
+        "getMinerSystemInfo":{"url":"/cgi-bin/get_system_info.cgi","method":"GET", "insecure":true, "timeout":30000},
+        "rebootMiner":{"url":"/cgi-bin/reboot.cgi","method":"GET"},
+        "resetMiner":{"url":"/cgi-bin/reset_conf.cgi","method":"GET"},
+        "killMiner":{"url":"/cgi-bin/kill_bmminer.cgi","method":"GET"},
+        "minerFirmwareUpdate":{"url":"/cgi-bin/upgrade_clear.cgi","method":"POST"},
+        "minerLandingPage":{"url":"/cgi-bin/minerStatus.cgi","method":"GET"},
+        "enableSSH":{"url":"/cgi-bin/ssh.cgi","method":"POST","data":"action=1&status=0&port=22"}
+      },
+      "logErrors" :[]
+    },
+    "StuMiner" : {
+      "qualifier": "",
+      "user" : "root",
+      "password" : "root",
+      "routes" :{ 
+        "setMinerSettings":{"url" : "/cgi-bin/set_miner_conf.cgi","method":"POST", "preAuth":true},
+        "setNetworkSettings":{"url" : "/cgi-bin/set_network_conf.cgi","method":"POST", "preAuth":true},
+        "getNetworkDiagnostics":{"url" : "/cgi-bin/network_diag.cgi","method":"POST", "preAuth":true},
+        "getKernelLogs":{"url":"/cgi-bin/moniter_new.cgi","method":"POST","data":"_stu_debug_command=502", "preAuth":true},
+        "getMinerSettings":{"url":"/cgi-bin/get_miner_conf.cgi","method":"GET", "preAuth":true},
+        "getMinerStatus":{"url":"/cgi-bin/get_miner_status.cgi","method":"GET", "preAuth":true},
+        "getMinerSystemInfo":{"url":"/cgi-bin/get_system_info.cgi","method":"GET", "preAuth":true},
+        "rebootMiner":{"url":"/cgi-bin/reboot.cgi","method":"GET", "preAuth":true},
+        "resetMiner":{"url":"/cgi-bin/reset_conf.cgi","method":"GET", "preAuth":true},
+        "killMiner":{"url":"/cgi-bin/kill_bmminer.cgi","method":"GET", "preAuth":true},
+        "minerFirmwareUpdate":{"url":"/cgi-bin/upgrade_clear.cgi","method":"POST", "preAuth":true},
+        "minerLandingPage":{"url":"","method":"GET", "preAuth":true},
+        "enableSSH":{"url":"/cgi-bin/ssh.cgi","method":"POST","data":"action=1&status=0&port=22", "preAuth":true}
+      },
+      "logErrors" :[
+        {"name":"powerInsufficient", "message":"Check the power supply and the requirements for the miner."
+          , "matches" :["check_asic_number_with_power_on.*find 0 asic, times 5", "ERROR_SOC_INIT"]},
+        {"name":"tempSensorType", "message":"Wrong temperature sensor type. Verify firmware."
+          , "matches" :["is_temp_sensor_type_correct: Wrong temp sensor type", "ERROR_TEMP_LOST"]},
+        {"name":"tempSensorCorrupt", "message":"Environment is too cold!"
+          , "matches" :["can get NONE temp info or temp value abnormal", "ERROR_TEMP_LOST"]},
+        {"name":"ubiRead", "message":"Controller PEB read failed. Check voltages, controller and firmware."
+          , "matches" :[" ubi_io_read.*from PEB"]},
+        {"name":"ubiFailedResponse", "message":"Controller I2C read failed. Check voltages, controller and firmware."
+          , "matches" :[" ubi_io_read.*from PEB"]},
+        {"name":"tempTooHot", "message":"Miner is too hot."
+          , "matches" :["ERROR_TEMP_TOO_HIGH"]},
+        {"name":"powerSupplyFailure", "message":"Power supply failed. Replace if necessary."
+          , "matches" :["ERROR_POWER_LOST"]}
+      ],      
+      "cgminerCommands" : ["version", "summary","pools", "devs", "stats", "config", "devdetails"]
+    },
+    "ZigMiner" : {
+      "qualifier": "",
+      "user" : "admin",
+      "password" : "fusion",
+      "routes" :{ 
+        "setMinerSettings":{"url" : "/cgi-bin/set_miner_conf_custom.cgi","method":"POST"},
+        "setNetworkSettings":{"url" : "/cgi-bin/set_network_conf.cgi","method":"POST"},
+        "getNetworkDiagnostics":{"url" : "/cgi-bin/network_diag.cgi","method":"POST"},
+        "getKernelLogs":{"url":"/cgi-bin/get_kernel_log.cgi","method":"GET"},
+        "getMinerSettings":{"url":"/api/dashboard-states","method":"GET", "insecure":true},
+        "getMinerStatus":{"url":"/api/dashboard-states","method":"GET", "insecure":true},
+        "getMinerSystemInfo":{"url":"","method":""},
+        "rebootMiner":{"url":"","method":""},
+        "resetMiner":{"url":"","method":""},
+        "killMiner":{"url":"/cgi-bin/kill_cgminer.cgi","method":"GET"},
+        "minerFirmwareUpdate":{"url":"/cgi-bin/upgrade_clear.cgi","method":"POST"},
+        "minerLandingPage":{"url":"","method":"GET"},
+        "enableSSH":{"url":"/cgi-bin/ssh.cgi","method":"POST","data":"action=1&status=0&port=22"}
+      },
+      "logErrors" :[]
+    }
+  },
+  "minerTypeMap": {
+    "Antminer S9": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "S9",
+      "code": "S",
+      "model": "S9",
+      "version": "a",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[678]\\b",
+      "freqNamesRE": "freq_avg[678]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "latestStableFirmware": "Antminer-S9-all-201711171757-autofreq-user-Update2UBI-NF.tar.gz",
+      "clockingFirmware": "Antminer-S9-xilinx-updater-3.8.7.tar.gz",
+      "cardIDs": [6,7,8],
+      "cardChipCount": 63,
+      "intakeFanName":"fan5",
+      "exhaustFanName":"fan6",
+      "overclock" :{
+        "softwareVersions" : ["bmminer 4.11.1"],
+        "scales":{
+          "frequencies":[550,600,625,650,662,677,693,708,723,738,753,768,775,800,825,850,857],
+          "voltages":   [8.1,8.1,8.1,8.1,8.1,8.2,8.3,8.4,8.5,8.6,8.7,8.8,8.9,9.0,9.1,9.2,9.1]  
+        },
+        "frequencies":["550M","600M","625M","650M","662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M"],
+        "voltages":["7.7v","7.8v","7.9v","8.0v","8.1v","8.2v","8.3v","8.4v","8.5v","8.6v","8.7v","8.8v","8.9v","9.0v","9.1v","9.2v","9.3v","9.4v","9.5v"],
+        "presets":["662M, 8.1v @ 1100w","677M, 8.2v","693M, 8.3v","708M, 8.4v","723M, 8.5v","738M, 8.6v","753M, 8.7v","768M, 8.8v @ 1550W","775M, 8.9v","800M, 9.0v *","850M, 9.1v @ 1750w *"],
+        "maxChipErrorRate":15
+      },
+      "firmwareUpdatePrefix":"S9_",
+      "powerEfficiency": 0.098
+    },
+    "Antminer S9i": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "S9i",
+      "code": "Si",
+      "model": "S9",
+      "version": "i",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[678]\\b",
+      "freqNamesRE": "freq_avg[678]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "latestStableFirmware": "Antminer-S9i-xilinx-201805222008-autofreq-user-UBI-NF.tar.gz",
+      "clockingFirmware": "Antminer-S9-xilinx-updater-3.8.7.tar.gz",
+      "cardIDs": [6,7,8],
+      "cardChipCount": 63,
+      "intakeFanName":"fan5",
+      "exhaustFanName":"fan6",
+      "overclock" :{
+        "softwareVersions" : ["bmminer 4.11.1"],
+        "scales":{
+          "frequencies":[550,600,625,650,662,677,693,708,723,738,753,768,775,800,825,850,857],
+          "voltages":   [8.1,8.1,8.1,8.1,8.1,8.2,8.3,8.4,8.5,8.6,8.7,8.8,8.9,9.0,9.1,9.2,9.1]  
+        },
+        "frequencies":["550M","600M","625M","650M","662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M"],
+        "voltages":["7.7v","7.8v","7.9v","8.0v","8.1v","8.2v","8.3v","8.4v","8.5v","8.6v","8.7v","8.8v","8.9v","9.0v","9.1v","9.2v","9.3v","9.4v","9.5v"],
+        "presets":["662M, 8.1v @ 1100w","677M, 8.2v","693M, 8.3v","708M, 8.4v","723M, 8.5v","738M, 8.6v","753M, 8.7v","768M, 8.8v @ 1550W","775M, 8.9v","800M, 9.0v *","850M, 9.1v @ 1750w *"],
+        "maxChipErrorRate":15
+      },
+      "firmwareUpdatePrefix":"S9_",
+      "powerEfficiency": 0.098
+    },
+    "Antminer S9j": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "S9j",
+      "code": "Sj",
+      "model": "S9",
+      "version": "j",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[678]\\b",
+      "freqNamesRE": "freq_avg[678]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "latestStableFirmware": "Antminer-S9i-xilinx-201805222008-autofreq-user-UBI-NF.tar.gz",
+      "clockingFirmware": "Antminer-S9-xilinx-updater-3.8.7.tar.gz",
+      "cardIDs": [6,7,8],
+      "cardChipCount": 63,
+      "intakeFanName":"fan5",
+      "exhaustFanName":"fan6",
+      "overclock" :{
+        "softwareVersions" : ["bmminer 4.11.1"],
+        "scales":{
+          "frequencies":[550,600,625,650,662,677,693,708,723,738,753,768,775,800,825,850,857],
+          "voltages":   [8.1,8.1,8.1,8.1,8.1,8.2,8.3,8.4,8.5,8.6,8.7,8.8,8.9,9.0,9.1,9.2,9.1]  
+        },
+        "frequencies":["550M","600M","625M","650M","662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M"],
+        "voltages":["7.7v","7.8v","7.9v","8.0v","8.1v","8.2v","8.3v","8.4v","8.5v","8.6v","8.7v","8.8v","8.9v","9.0v","9.1v","9.2v","9.3v","9.4v","9.5v"],
+        "presets":["662M, 8.1v @ 1100w","677M, 8.2v","693M, 8.3v","708M, 8.4v","723M, 8.5v","738M, 8.6v","753M, 8.7v","768M, 8.8v @ 1550W","775M, 8.9v","800M, 9.0v *","850M, 9.1v @ 1750w *"],
+        "maxChipErrorRate":15
+      },
+      "firmwareUpdatePrefix":"S9_",
+      "powerEfficiency": 0.098
+    },
+    "Antminer S9 SE": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "S9SE",
+      "code": "S",
+      "model": "S9",
+      "version": "e",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[123]\\b",
+      "freqNamesRE": "freq[123]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "latestStableFirmware": "Antminer-S9-all-201711171757-autofreq-user-Update2UBI-NF.tar.gz",
+      "clockingFirmware": "Antminer-S9-xilinx-updater-3.8.7.tar.gz",
+      "cardIDs": [6,7,8],
+      "cardChipCount": 63,
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan2",
+      "powerEfficiency": 0.080
+    },
+    "Antminer S11": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "S11",
+      "code": "Sm",
+      "model": "S11",
+      "version": "m",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[123]\\b",
+      "freqNamesRE": "freq[123]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "cardIDs": [1,2,3],
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan2",
+      "overclock" :{
+        "frequencies":["662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M","850M"],
+        "voltages":["8.1v","8.2v","8.3v","8.4v","8.5v","8.6v","8.7v","8.8v","8.9v","9.0v","9.1v","9.2v","9.3v","9.4v","9.5v"],
+        "presets":["662M, 8.1v @ 1100w","677M, 8.2v","693M, 8.3v","708M, 8.4v","723M, 8.5v","738M, 8.6v","753M, 8.7v","768M, 8.8v @ 1550W","775M, 8.9v","800M, 9.0v *","850M, 9.1v @ 1750w *"]
+      },
+      "firmwareUpdatePrefix":"S9_",
+      "powerEfficiency": 0.075
+    },
+    "Antminer S15": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "S15",
+      "code": "Sn",
+      "model": "S15",
+      "version": "n",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[1234]\\b",
+      "freqNamesRE": "freq[1234]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "latestStableFirmware": "Antminer-S15-user-OM-201912131535-sig_4864.tar.gz",
+      "cardIDs": [1,2,3,4],
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan2",
+      "overclock" :{
+        "frequencies":["662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M"],
+        "voltages":["8.1v","8.2v","8.3v","8.4v","8.5v","8.6v","8.7v","8.8v","8.9v","9.0v","9.1v","9.2v","9.3v","9.4v","9.5v"],
+        "presets":["662M, 8.1v @ 1100w","677M, 8.2v","693M, 8.3v","708M, 8.4v","723M, 8.5v","738M, 8.6v","753M, 8.7v","768M, 8.8v @ 1550W","775M, 8.9v","800M, 9.0v *","850M, 9.1v @ 1750w *"]
+      },
+      "firmwareUpdatePrefix":"S9_",
+      "powerEfficiency": 0.066
+    },
+    "Antminer S17": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "S17",
+      "code": "So",
+      "model": "S17",
+      "version": "o",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[1234]\\b",
+      "freqNamesRE": "freq[123]\\b",
+      "fansNamesRE": "fan[1234]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":87,
+        "warm":82,
+        "mild":72
+      },
+      "latestStableFirmware": "Antminer-S17-user-OM-201912250945-sig_5071.tar.gz",
+      "clockingFirmware": "Antminer-S17-1.0.0-updater.tar.gz",
+      "cardIDs": [1,2,3,4],
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan2",
+      "firmwareContentType":"x-gzip",
+      "overclock" :{
+        "frequencies":["662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M","875M","900M"],
+        "voltages":["16.1v","16.2v","16.3v","16.4v","16.5v","16.6v","16.7v","16.8v","16.9v","17.0v","17.1v","17.2v","17.3v","17.4v","17.5v"],
+        "presets":["662M, 16.1v @ 2200w","677M, 16.2v","693M, 16.3v","708M, 16.4v","723M, 16.5v","750M, 16.6v","775M, 16.7v","800M, 16.8v @ 2550W","825M, 16.9v","850M, 17.0v","875M, 17.1v","900M, 17.2v @ 3250w"]
+      },
+      "firmwareUpdatePrefix":"X17_",
+      "powerEfficiency": 0.045
+    },
+    "Antminer S17e": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "S17e",
+      "code": "Se",
+      "model": "S17",
+      "version": "o",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[123]\\b",
+      "freqNamesRE": "freq[123]\\b",
+      "fansNamesRE": "fan[1234]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":87,
+        "warm":82,
+        "mild":72
+      },
+      "latestStableFirmware": "Antminer-S17e-user-OM-201912251055-sig_5079.tar.gz",
+      "clockingFirmware": "",
+      "cardIDs": [1,2,3],
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan2",
+      "firmwareContentType":"x-gzip",
+      "overclock" :{
+        "frequencies":["662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M","875M","900M"],
+        "voltages":["17.1v","17.2v","17.3v","17.4v","17.5v","17.6v","17.7v","17.8v","17.9v","18.0v","18.1v","18.2v","18.3v","18.4v","18.5v"],
+        "presets":["662M, 17.1v @ 2200w","677M, 17.2v","693M, 17.3v","708M, 17.4v","723M, 17.5v","750M, 17.6v","775M, 17.7v","800M, 17.8v @ 2550W","825M, 17.9v","850M, 18.0v","875M, 18.1v","900M, 18.2v @ 3250w"]
+      },
+      "firmwareUpdatePrefix":"X17_",
+      "powerEfficiency": 0.045
+    },
+    "Antminer S17+": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "S17+",
+      "code": "Sp",
+      "model": "S17",
+      "version": "o",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[123]\\b",
+      "freqNamesRE": "freq[123]\\b",
+      "fansNamesRE": "fan[1234]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":87,
+        "warm":82,
+        "mild":72
+      },
+      "latestStableFirmware": "Antminer-S17+-user-OM-202004071411-sig_5755.tar.gz",
+      "clockingFirmware": "",
+      "cardIDs": [1,2,3],
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan2",
+      "firmwareContentType":"x-gzip",
+      "overclock" :{
+        "frequencies":["662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M","875M","900M"],
+        "voltages":["17.1v","17.2v","17.3v","17.4v","17.5v","17.6v","17.7v","17.8v","17.9v","18.0v","18.1v","18.2v","18.3v","18.4v","18.5v"],
+        "presets":["662M, 17.1v @ 2200w","677M, 17.2v","693M, 17.3v","708M, 17.4v","723M, 17.5v","750M, 17.6v","775M, 17.7v","800M, 17.8v @ 2550W","825M, 17.9v","850M, 18.0v","875M, 18.1v","900M, 18.2v @ 3250w"]
+      },
+      "firmwareUpdatePrefix":"X17_",
+      "powerEfficiency": 0.040
+    },
+    "Antminer S17 Pro": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "S17 Pro",
+      "code": "Sr",
+      "model": "S17",
+      "version": "o",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[123]\\b",
+      "freqNamesRE": "freq[123]\\b",
+      "fansNamesRE": "fan[1234]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":85,
+        "warm":75,
+        "mild":65
+      },
+      "latestStableFirmware": "Antminer-S17Pro-user-OM-201912250947-sig_5073.tar.gz",
+      "clockingFirmware": "",
+      "cardIDs": [1,2,3],
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan3",
+      "firmwareContentType":"x-gzip",
+      "overclock" :{
+        "frequencies":["662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M","875M","900M"],
+        "voltages":["17.1v","17.2v","17.3v","17.4v","17.5v","17.6v","17.7v","17.8v","17.9v","18.0v","18.1v","18.2v","18.3v","18.4v","18.5v"],
+        "presets":["662M, 17.1v @ 2200w","677M, 17.2v","693M, 17.3v","708M, 17.4v","723M, 17.5v","750M, 17.6v","775M, 17.7v","800M, 17.8v @ 2550W","825M, 17.9v","850M, 18.0v","875M, 18.1v","900M, 18.2v @ 3250w"]
+      },
+      "firmwareUpdatePrefix":"X17_",
+      "powerEfficiency": 0.045
+    },
+    "Antminer S19": {
+      "brand": "Antminer",
+      "apiVersion":"Antminer_X19",
+      "hashingAlgorithm": "SHA256",
+      "name": "S19",
+      "code": "Ss",
+      "model": "S19",
+      "version": "o",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[1234]\\b",
+      "freqNamesRE": "freq[123]\\b",
+      "fansNamesRE": "fan[1234]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":87,
+        "warm":82,
+        "mild":72
+      },
+      "latestStableFirmware": "Antminer-S19-user-OM-201912250945-sig_5071.tar.gz",
+      "clockingFirmware": "Antminer-S19-1.0.0-updater.tar.gz",
+      "cardIDs": [1,2,3],
+      "cardChipCount": 114,
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan3",
+      "firmwareContentType":"x-gzip",
+      "overclock" :{
+        "frequencies":["662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M","875M","900M"],
+        "voltages":["16.1v","16.2v","16.3v","16.4v","16.5v","16.6v","16.7v","16.8v","16.9v","17.0v","17.1v","17.2v","17.3v","17.4v","17.5v"],
+        "presets":["662M, 16.1v @ 2200w","677M, 16.2v","693M, 16.3v","708M, 16.4v","723M, 16.5v","750M, 16.6v","775M, 16.7v","800M, 16.8v @ 2550W","825M, 16.9v","850M, 17.0v","875M, 17.1v","900M, 17.2v @ 3250w"]
+      },
+      "firmwareUpdatePrefix":"X19_",
+      "powerEfficiency": 0.028
+    },
+  	"Antminer S19 Pro": {
+      "brand": "Antminer",
+      "apiVersion":"Antminer_X19",
+      "hashingAlgorithm": "SHA256",
+      "name": "S19 Pro",
+      "code": "St",
+      "model": "S19",
+      "version": "o",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[123]\\b",
+      "freqNamesRE": "freq[123]\\b",
+      "fansNamesRE": "fan[1234]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":85,
+        "warm":75,
+        "mild":65
+      },
+      "latestStableFirmware": "Antminer-S19Pro-user-OM-201912250947-sig_5073.tar.gz",
+      "clockingFirmware": "",
+      "cardIDs": [1,2,3],
+      "cardChipCount": 114,
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan3",
+      "firmwareContentType":"x-gzip",
+      "overclock" :{
+        "frequencies":["662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M","875M","900M"],
+        "voltages":["17.1v","17.2v","17.3v","17.4v","17.5v","17.6v","17.7v","17.8v","17.9v","18.0v","18.1v","18.2v","18.3v","18.4v","18.5v"],
+        "presets":["662M, 17.1v @ 2200w","677M, 17.2v","693M, 17.3v","708M, 17.4v","723M, 17.5v","750M, 17.6v","775M, 17.7v","800M, 17.8v @ 2550W","825M, 17.9v","850M, 18.0v","875M, 18.1v","900M, 18.2v @ 3250w"]
+      },
+      "firmwareUpdatePrefix":"X19_",
+      "powerEfficiency": 0.033
+    },
+    "Antminer S19j": {
+      "brand": "Antminer",
+      "apiVersion":"Antminer_X19",
+      "hashingAlgorithm": "SHA256",
+      "name": "S19j",
+      "code": "Su",
+      "model": "S19j",
+      "version": "o",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[1234]\\b",
+      "freqNamesRE": "freq[123]\\b",
+      "fansNamesRE": "fan[1234]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":87,
+        "warm":82,
+        "mild":72
+      },
+      "latestStableFirmware": "Antminer-S19j-user-OM-201912250945-sig_5071.tar.gz",
+      "clockingFirmware": "Antminer-S19j-1.0.0-updater.tar.gz",
+      "cardIDs": [1,2,3],
+      "cardChipCount": 114,
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan3",
+      "firmwareContentType":"x-gzip",
+      "overclock" :{
+        "frequencies":["662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M","875M","900M"],
+        "voltages":["16.1v","16.2v","16.3v","16.4v","16.5v","16.6v","16.7v","16.8v","16.9v","17.0v","17.1v","17.2v","17.3v","17.4v","17.5v"],
+        "presets":["662M, 16.1v @ 2200w","677M, 16.2v","693M, 16.3v","708M, 16.4v","723M, 16.5v","750M, 16.6v","775M, 16.7v","800M, 16.8v @ 2550W","825M, 16.9v","850M, 17.0v","875M, 17.1v","900M, 17.2v @ 3250w"]
+      },
+      "firmwareUpdatePrefix":"X19_",
+      "powerEfficiency": 0.028
+    },
+  	"Antminer S19j Pro": {
+      "brand": "Antminer",
+      "apiVersion":"Antminer_X19",
+      "hashingAlgorithm": "SHA256",
+      "name": "S19j Pro",
+      "code": "Sv",
+      "model": "S19j",
+      "version": "o",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[123]\\b",
+      "freqNamesRE": "freq[123]\\b",
+      "fansNamesRE": "fan[1234]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":85,
+        "warm":75,
+        "mild":65
+      },
+      "latestStableFirmware": "Antminer-S19jPro-user-OM-201912250947-sig_5073.tar.gz",
+      "clockingFirmware": "",
+      "cardIDs": [1,2,3],
+      "cardChipCount": 114,
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan3",
+      "firmwareContentType":"x-gzip",
+      "overclock" :{
+        "frequencies":["662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M","875M","900M"],
+        "voltages":["17.1v","17.2v","17.3v","17.4v","17.5v","17.6v","17.7v","17.8v","17.9v","18.0v","18.1v","18.2v","18.3v","18.4v","18.5v"],
+        "presets":["662M, 17.1v @ 2200w","677M, 17.2v","693M, 17.3v","708M, 17.4v","723M, 17.5v","750M, 17.6v","775M, 17.7v","800M, 17.8v @ 2550W","825M, 17.9v","850M, 18.0v","875M, 18.1v","900M, 18.2v @ 3250w"]
+      },
+      "firmwareUpdatePrefix":"X19_",
+      "powerEfficiency": 0.033
+    },
+    "Antminer T9": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "T9o",
+      "code": "T",
+      "model": "T9",
+      "version": "a",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[678]\\b",
+      "freqNamesRE": "freq_avg[678]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "overclock" :{
+        "frequencies":["662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M"],
+        "voltages":["8.1v","8.2v","8.3v","8.4v","8.5v","8.6v","8.7v","8.8v","8.9v","9.0v","9.1v","9.2v","9.3v","9.4v","9.5v"],
+        "presets":["662M, 8.1v @ 1100w","677M, 8.2v","693M, 8.3v","708M, 8.4v","723M, 8.5v","738M, 8.6v","753M, 8.7v","768M, 8.8v @ 1550W","775M, 8.9v","800M, 9.0v *","850M, 9.1v @ 1750w *"]
+      },
+      "firmwareUpdatePrefix":"S9_",
+      "powerEfficiency": 0.11
+    },
+    "Antminer T9+": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "T9",
+      "code": "T",
+      "model": "T9",
+      "version": "b",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[678]\\b",
+      "freqNamesRE": "freq_avg[678]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "overclock" :{
+        "frequencies":["662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M"],
+        "voltages":["8.1v","8.2v","8.3v","8.4v","8.5v","8.6v","8.7v","8.8v","8.9v","9.0v","9.1v","9.2v","9.3v","9.4v","9.5v"],
+        "presets":["662M, 8.1v @ 1100w","677M, 8.2v","693M, 8.3v","708M, 8.4v","723M, 8.5v","738M, 8.6v","753M, 8.7v","768M, 8.8v @ 1550W","775M, 8.9v","800M, 9.0v *","850M, 9.1v @ 1750w *"]
+      },
+      "firmwareUpdatePrefix":"S9_",
+      "powerEfficiency": 0.11
+    },
+    "Antminer T11": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "T11",
+      "code": "Tm",
+      "model": "T11",
+      "version": "m",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[678]\\b",
+      "freqNamesRE": "freq_avg[678]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "cardIDs": [1,2,3],
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan2"
+    },
+    "Antminer T15": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "T15",
+      "code": "Tn",
+      "model": "T15",
+      "version": "n",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[1234]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "latestStableFirmware": "Antminer-T15-user-OM-201912131546-sig_4867.tar.gz",
+      "cardIDs": [1,2,3,4],
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan2"
+    },
+    "Antminer T17": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "T17",
+      "code": "To",
+      "model": "T17",
+      "version": "o",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[123]\\b",
+      "freqNamesRE": "freq[123]\\b",
+      "fansNamesRE": "fan[1234]\\b",
+      "minerConfigOptions": { "frequency": 800, "volts":1710},
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":87,
+        "warm":82,
+        "mild":72
+      },
+      "latestStableFirmware": "Antminer-T17-user-OM-201907290032-sig.tar.gz",
+      "clockingFirmware": "Antminer-T17-1.0.0-updater.tar.gz",
+      "cardIDs": [1,2,3],
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan2",
+      "firmwareContentType":"x-gzip",
+      "overclock" :{
+        "softwareVersions" : ["bmminer 4.11.1","cgminer 1.0.0"],
+        "scales":{
+          "frequencies": [500, 550, 600, 658, 675, 687, 700, 712, 725, 737, 750, 775, 800, 825,  850,  875,  900,  925,  937,  950],
+          "voltages":   [1570,1580,1590,1600,1610,1620,1630,1640,1650,1660,1680,1700,1720, 1740, 1750, 1760, 1780, 1790, 1810],
+          "hashRateBumps": [0, 0, 0,0,1000,2000,3000,4000,5000,6000,7000,8000,9000,10000,10000,10000,10000,10000,10000,10000]  
+        },
+        "frequencies":["500M","550M","600M","658M","675M","687M","700M","712M","725M","737M","750M","762M","775M","800M","825M","850M","875M","900M","912M","925M","937M","950M"],
+        "voltages":["15.7v","15.9v","16.0v","16.1v","16.3v","16.5v","16.7v","16.9v","17.1v","17.3v","17.5v","17.7v","17.9v","18.1v","18.3v","18.5v","18.7v","18.9v","19.1v","19.3v"],
+        "presets":["662M, 16.1v @ 1400w","677M, 17.2v","800M, 17.1v @ 2550W","825M, 17.2v @ 2643w","850M, 17.5v @ 2808w","875M, 17.5v @ 2880w","900M, 17.7v @ 3030w"],
+        "maxChipErrorRate":15
+      },
+      "firmwareUpdatePrefix":"X17_",
+      "powerEfficiency": 0.055
+    },
+    "Antminer T17e": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "T17e",
+      "code": "Te",
+      "model": "T17",
+      "version": "o",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[123]\\b",
+      "freqNamesRE": "freq[123]\\b",
+      "fansNamesRE": "fan[1234]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":87,
+        "warm":82,
+        "mild":72
+      },
+      "latestStableFirmware": "Antminer-T17e-user-OM-202001130941-sig_5154.tar.gz",
+      "clockingFirmware": "",
+      "cardIDs": [1,2,3],
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan2",
+      "firmwareContentType":"x-gzip",
+      "overclock" :{
+        "frequencies":["658M","675M","687M","700M","712M","725M","737M","750M","762M","775M","800M","825M","850M","875M","900M","912M","925M","937M","950M"],
+        "voltages":["16.1v","16.3v","16.5v","16.7v","16.9v","17.1v","17.3v","17.5v","17.7v","17.9v","18.1v","18.3v","18.5v","18.7v","18.9v","19.1v","19.3v"],
+        "presets":["662M, 16.1v @ 1400w","677M, 17.2v","800M, 17.1v @ 2550W","825M, 17.2v @ 2643w","850M, 17.5v @ 2808w","875M, 17.5v @ 2880w","900M, 17.7v @ 3030w"]
+      },
+      "firmwareUpdatePrefix":"X17_",
+      "powerEfficiency": 0.055
+    },
+    "Antminer T17+": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "T17+",
+      "code": "Tp",
+      "model": "T17",
+      "version": "o",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[123]\\b",
+      "freqNamesRE": "freq[123]\\b",
+      "fansNamesRE": "fan[1234]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":87,
+        "warm":82,
+        "mild":72
+      },
+      "latestStableFirmware": "Antminer-T17+-user-OM-202004081127-sig_5761.tar.gz",
+      "clockingFirmware": "",
+      "cardIDs": [1,2,3],
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan2",
+      "firmwareContentType":"x-gzip",
+      "overclock" :{
+        "frequencies":["658M","675M","687M","700M","712M","725M","737M","750M","762M","775M","777M","800M","825M","850M","875M","900M","912M","925M","937M"],
+        "voltages":["16.1v","16.3v","16.5v","16.7v","16.9v","17.1v","17.3v","17.5v","17.7v","17.9v","18.1v","18.3v","18.5v","18.7v","18.9v","19.1v","19.3v"],
+        "presets":["662M, 16.1v @ 1400w","677M, 17.2v","800M, 17.1v @ 2550W","825M, 17.2v @ 2643w","850M, 17.5v @ 2808w","875M, 17.5v @ 2880w","900M, 17.7v @ 3030w"]
+      },
+      "firmwareUpdatePrefix":"X17_",
+      "powerEfficiency": 0.050
+    },
+    "Antminer T19": {
+      "brand": "Antminer",
+      "apiVersion":"Antminer_X19",
+      "hashingAlgorithm": "SHA256",
+      "name": "T19",
+      "code": "Ts",
+      "model": "T19",
+      "version": "o",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[1234]\\b",
+      "freqNamesRE": "freq[123]\\b",
+      "fansNamesRE": "fan[1234]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":87,
+        "warm":82,
+        "mild":72
+      },
+      "latestStableFirmware": "Antminer-T19-user-OM-201912250945-sig_5071.tar.gz",
+      "clockingFirmware": "Antminer-T19-1.0.0-updater.tar.gz",
+      "cardIDs": [1,2,3],
+      "cardChipCount": 114,
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan3",
+      "firmwareContentType":"x-gzip",
+      "overclock" :{
+        "frequencies":["662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M","875M","900M"],
+        "voltages":["16.1v","16.2v","16.3v","16.4v","16.5v","16.6v","16.7v","16.8v","16.9v","17.0v","17.1v","17.2v","17.3v","17.4v","17.5v"],
+        "presets":["662M, 16.1v @ 2200w","677M, 16.2v","693M, 16.3v","708M, 16.4v","723M, 16.5v","750M, 16.6v","775M, 16.7v","800M, 16.8v @ 2550W","825M, 16.9v","850M, 17.0v","875M, 17.1v","900M, 17.2v @ 3250w"]
+      },
+      "firmwareUpdatePrefix":"X19_",
+      "powerEfficiency": 0.028
+    },
+    "Antminer D3": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "X11",
+      "name": "D3",
+      "code": "D",
+      "model": "D3",
+      "version": "a",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[123]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "cardIDs": [1,2,3],
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan2"
+    },
+    "Antminer D9": {
+      "brand": "Antminer",
+      "apiVersion":"Antminer_X19",
+      "hashingAlgorithm": "X11",
+      "name": "D9",
+      "code": "D",
+      "model": "D9",
+      "version": "a",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[123]\\b",
+      "freqNamesRE": "freq[123]\\b",
+      "fansNamesRE": "fan[1234]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":85,
+        "warm":75,
+        "mild":65
+      },
+      "latestStableFirmware": "Antminer-L7-user-OM-201912250947-sig_5073.tar.gz",
+      "clockingFirmware": "",
+      "cardIDs": [1,2,3],
+      "cardChipCount": 114,
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan3",
+      "firmwareContentType":"x-gzip",
+      "overclock" :{
+        "frequencies":["662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M","875M","900M"],
+        "voltages":["17.1v","17.2v","17.3v","17.4v","17.5v","17.6v","17.7v","17.8v","17.9v","18.0v","18.1v","18.2v","18.3v","18.4v","18.5v"],
+        "presets":["662M, 17.1v @ 2200w","677M, 17.2v","693M, 17.3v","708M, 17.4v","723M, 17.5v","750M, 17.6v","775M, 17.7v","800M, 17.8v @ 2550W","825M, 17.9v","850M, 18.0v","875M, 18.1v","900M, 18.2v @ 3250w"]
+      },
+      "firmwareUpdatePrefix":"X19_",
+      "powerEfficiency": 1.604
+    },
+    "Antminer K7": {
+      "brand": "Antminer",
+      "apiVersion":"Antminer_X19",
+      "hashingAlgorithm": "Eaglesong",
+      "name": "K7",
+      "code": "D",
+      "model": "K7",
+      "version": "a",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[123]\\b",
+      "freqNamesRE": "freq[123]\\b",
+      "fansNamesRE": "fan[1234]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":85,
+        "warm":75,
+        "mild":65
+      },
+      "latestStableFirmware": "Antminer-K7-user-OM-201912250947-sig_5073.tar.gz",
+      "clockingFirmware": "",
+      "cardIDs": [1,2,3],
+      "cardChipCount": 114,
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan3",
+      "firmwareContentType":"x-gzip",
+      "overclock" :{
+        "frequencies":["662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M","875M","900M"],
+        "voltages":["17.1v","17.2v","17.3v","17.4v","17.5v","17.6v","17.7v","17.8v","17.9v","18.0v","18.1v","18.2v","18.3v","18.4v","18.5v"],
+        "presets":["662M, 17.1v @ 2200w","677M, 17.2v","693M, 17.3v","708M, 17.4v","723M, 17.5v","750M, 17.6v","775M, 17.7v","800M, 17.8v @ 2550W","825M, 17.9v","850M, 18.0v","875M, 18.1v","900M, 18.2v @ 3250w"]
+      },
+      "firmwareUpdatePrefix":"X19_",
+      "powerEfficiency": 0.0485
+    },
+    "Antminer KA3": {
+      "brand": "Antminer",
+      "apiVersion":"Antminer_X19",
+      "hashingAlgorithm": "Kadena",
+      "name": "KA3",
+      "code": "D",
+      "model": "KA3",
+      "version": "a",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[123]\\b",
+      "freqNamesRE": "freq[123]\\b",
+      "fansNamesRE": "fan[1234]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":85,
+        "warm":75,
+        "mild":65
+      },
+      "latestStableFirmware": "Antminer-KA3-user-OM-201912250947-sig_5073.tar.gz",
+      "clockingFirmware": "",
+      "cardIDs": [1,2,3],
+      "cardChipCount": 114,
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan3",
+      "firmwareContentType":"x-gzip",
+      "overclock" :{
+        "frequencies":["662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M","875M","900M"],
+        "voltages":["17.1v","17.2v","17.3v","17.4v","17.5v","17.6v","17.7v","17.8v","17.9v","18.0v","18.1v","18.2v","18.3v","18.4v","18.5v"],
+        "presets":["662M, 17.1v @ 2200w","677M, 17.2v","693M, 17.3v","708M, 17.4v","723M, 17.5v","750M, 17.6v","775M, 17.7v","800M, 17.8v @ 2550W","825M, 17.9v","850M, 18.0v","875M, 18.1v","900M, 18.2v @ 3250w"]
+      },
+      "firmwareUpdatePrefix":"X19_",
+      "powerEfficiency": 0.019
+    },
+    "Antminer L3": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "Scrypt",
+      "name": "L3a",
+      "code": "l",
+      "model": "L3",
+      "version": "a",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[1234]\\b",
+      "minerConfigOptions": { "frequency": 450, "volts":9 },
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":79,
+        "warm":74,
+        "mild":64
+      },
+      "latestStableFirmware": "Antminer-L3+-201708251737-384M.tar.gz",
+      "clockingFirmware": "Antminer-L3+-updater-3.8.7.tar.gz",
+      "cardIDs": [1,2,3,4],
+      "cardChipCount": 72,
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan2",
+      "overclock" :{
+        "softwareVersions" : ["bmminer 4.11.1"],
+        "scales":{
+          "frequencies":[350,356,362,369,378,384,391,397,406,419,431,438,450,462,469,475,487,494,506],
+          "voltages":   [ 11, 10,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9]  
+        },
+        "frequencies":["350M","356M","362M","369M","378M","384M","391M","397M","406M","419M","431M","438M","450M","462M","469M","475M","487M","494M","506M"],
+        "voltages":["7v","8v","9v","10v","11v","12v","13v"],
+        "presets":["384, 9v","469, 10v @ 900w","494M, 10v","531M, 10v"],
+        "maxChipErrorRate":15
+      },
+      "firmwareUpdatePrefix":"L3_",
+      "powerEfficiency":1.6
+    },
+    "Antminer L3+": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "Scrypt",
+      "name": "L3",
+      "code": "L", 
+      "model": "L3",
+      "version": "b",
+      "alertDelta":0.8,
+      "tempNamesRE":"temp2_[1234]\\b",
+      "minerConfigOptions": { "frequency": 450, "volts":9 },
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":79,
+        "warm":74,
+        "mild":64
+      },
+      "latestStableFirmware": "Antminer-L3+-201708251737-384M.tar.gz",
+      "clockingFirmware": "Antminer-L3+-updater-3.8.7.tar.gz",
+      "cardIDs": [1,2,3,4],
+      "cardChipCount": 72,
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan2",
+      "overclock" :{
+        "softwareVersions" : ["bmminer 4.11.1"],
+        "scales":{
+          "frequencies":[350,356,362,369,378,384,391,397,406,419,431,438,450,462,469,475,487,494,506],
+          "voltages":   [ 11, 10,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9]  
+        },
+        "frequencies":["350M","356M","362M","369M","378M","384M","391M","397M","406M","419M","431M","438M","450M","462M","469M","475M","487M","494M","506M"],
+        "voltages":["7v","8v","9v","10v","11v","12v","13v"],
+        "presets":["384, 9v","469, 10v @ 900w","494M, 10v","531M, 10v"],
+        "maxChipErrorRate":15
+      },
+      "firmwareUpdatePrefix":"L3_",
+      "powerEfficiency":1.6
+    },
+    "Antminer L3++": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "Scrypt",
+      "name": "L3c",
+      "code": "L", 
+      "model": "L3",
+      "version": "c",
+      "alertDelta":0.8,
+      "tempNamesRE":"temp2_[1234]\\b",
+      "minerConfigOptions": { "frequency": 450, "volts":9 },
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":79,
+        "warm":74,
+        "mild":64
+      },
+      "latestStableFirmware": "Antminer-L3++-201805111116-450M.tar.gz",
+      "clockingFirmware": "Antminer-L3+-updater-3.8.7.tar.gz",
+      "cardIDs": [1,2,3,4],
+      "cardChipCount": 72,
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan2",
+      "overclock" :{
+        "softwareVersions" : ["bmminer 4.11.1"],
+        "scales":{
+          "frequencies":[350,356,362,369,378,384,391,397,406,419,431,438,450,462,469,475,487,494,506],
+          "voltages":   [ 11, 10,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9]  
+        },
+        "frequencies":["350M","356M","362M","369M","378M","384M","391M","397M","406M","419M","431M","438M","450M","462M","469M","475M","487M","494M","506M"],
+        "voltages":["7v","8v","9v","10v","11v","12v","13v"],
+        "presets":["384, 9v","469, 10v @ 900w","494M, 10v","531M, 10v"],
+        "maxChipErrorRate":15
+      },
+      "firmwareUpdatePrefix":"L3_",
+      "powerEfficiency":1.6
+    },
+    "Antminer L7": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "Scrypt",
+      "apiVersion":"Antminer_X19",
+      "name": "L7a",
+      "code": "l",
+      "model": "L7",
+      "version": "a",
+      "alertDelta": 0.8,
+      "tempNamesRE": "temp2_[123]\\b",
+      "freqNamesRE": "freq[123]\\b",
+      "fansNamesRE": "fan[1234]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":85,
+        "warm":75,
+        "mild":65
+      },
+      "latestStableFirmware": "Antminer-L7-user-OM-201912250947-sig_5073.tar.gz",
+      "clockingFirmware": "",
+      "cardIDs": [1,2,3],
+      "cardChipCount": 114,
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan3",
+      "firmwareContentType":"x-gzip",
+      "overclock" :{
+        "frequencies":["662M","668M","675M","681M","687M","693M","700M","706M","712M","718M","725M","731M","737M","743M","750M","756M","762M","768M","775M","781M","787M","793M","800M","825M","850M","875M","900M"],
+        "voltages":["17.1v","17.2v","17.3v","17.4v","17.5v","17.6v","17.7v","17.8v","17.9v","18.0v","18.1v","18.2v","18.3v","18.4v","18.5v"],
+        "presets":["662M, 17.1v @ 2200w","677M, 17.2v","693M, 17.3v","708M, 17.4v","723M, 17.5v","750M, 17.6v","775M, 17.7v","800M, 17.8v @ 2550W","825M, 17.9v","850M, 18.0v","875M, 18.1v","900M, 18.2v @ 3250w"]
+      },
+      "firmwareUpdatePrefix":"X19_",
+      "powerEfficiency": 0.361
+    },
+    "Antminer A3": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "Blake(2b)",
+      "name": "A3",
+      "code": "A", 
+      "model": "A3",
+      "version": "a",
+      "alertDelta":0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":75,
+        "warm":60,
+        "mild":50
+      }
+    },
+    "Antminer E3": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "Ethash",
+      "name": "E3",
+      "code": "E", 
+      "model": "E3",
+      "version": "a",
+      "alertDelta":0.8,
+      "tempNamesRE":"temp_max2_(?:[12389]|1[0123])\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":75,
+        "warm":60,
+        "mild":50
+      },
+      "latestStableFirmware": "Antminer-E3-V540_0327.tar.gz",
+      "powerEfficiency":4.44
+    },
+    "Antminer B3": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "Tensority",
+      "name": "B3",
+      "code": "B", 
+      "model": "B3",
+      "version": "a",
+      "alertDelta":0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":75,
+        "warm":60,
+        "mild":50
+      }
+    },
+    "Antminer X3": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "CryptoNight",
+      "name": "X3",
+      "code": "X", 
+      "model": "X3",
+      "version": "a",
+      "alertDelta":0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":75,
+        "warm":60,
+        "mild":50
+      }
+    },
+    "Antminer Z9": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "Equihash",
+      "name": "Z9",
+      "code": "Z", 
+      "model": "Z9",
+      "version": "a",
+      "alertDelta":0.8, 
+      "tempNamesRE":"temp2_[123]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":80,
+        "warm":65,
+        "mild":50
+      }
+    },
+    "Antminer Z9-Mini": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "Equihash",
+      "name": "Z9m",
+      "code": "Zm", 
+      "model": "Z9",
+      "version": "m",
+      "alertDelta":0.8, 
+      "tempNamesRE":"temp2_[123]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":80,
+        "warm":65,
+        "mild":50
+      }
+    },
+    "Antminer Z11": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "Equihash",
+      "name": "Z11",
+      "code": "Z", 
+      "model": "Z11",
+      "version": "a",
+      "alertDelta":0.8, 
+      "tempNamesRE":"temp2_[123]\\b",
+      "freqNamesRE": "frequency[123]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":87,
+        "warm":82,
+        "mild":72
+      },
+      "latestStableFirmware": "Antminer-Z11-fixed-718M-201910241109_4392.tarz",
+      "clockingFirmware": "Z11_2.3_download.tar",
+      "powerEfficiency":0.0105
+    },
+    "AvalonMiner 1041": {
+      "brand": "AvalonMiner",
+      "hashingAlgorithm": "SHA256",
+      "name": "A1041",
+      "code": "1041",
+      "model": "A1041",
+      "version": "A",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.063,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.9.2"],
+        "versionData":{
+          "hardwareVersion": "1",
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "AvalonMiner 1045": {
+      "brand": "AvalonMiner",
+      "hashingAlgorithm": "SHA256",
+      "name": "A1045",
+      "code": "1045",
+      "model": "A1045",
+      "version": "A",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.063,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.11.1"],
+        "versionData":{
+          "hardwareVersion": "1",
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "AvalonMiner 1046": {
+      "brand": "AvalonMiner",
+      "hashingAlgorithm": "SHA256",
+      "name": "A1046",
+      "code": "1046",
+      "model": "A1046",
+      "version": "A",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.063,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.11.1"],
+        "versionData":{
+          "hardwareVersion": "1",
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "AvalonMiner 1047": {
+      "brand": "AvalonMiner",
+      "hashingAlgorithm": "SHA256",
+      "name": "A1047",
+      "code": "1047",
+      "model": "A1047",
+      "version": "A",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.065,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.11.1"],
+        "versionData":{
+          "hardwareVersion": "1",
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "AvalonMiner 1166": {
+      "brand": "AvalonMiner",
+      "hashingAlgorithm": "SHA256",
+      "apiVersion":"AvalonMiner11",
+      "name": "A1166",
+      "code": "1166",
+      "model": "A1166",
+      "version": "A",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.047,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.11.1"],
+        "versionData":{
+          "hardwareVersion": "1",
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "AvalonMiner 1166Pro": {
+      "brand": "AvalonMiner",
+      "hashingAlgorithm": "SHA256",
+      "apiVersion":"AvalonMiner11",
+      "name": "A1166Pro",
+      "code": "1166",
+      "model": "A1166P",
+      "version": "P",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.042,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.11.1"],
+        "versionData":{
+          "hardwareVersion": "1",
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "AvalonMiner 1246": {
+      "brand": "AvalonMiner",
+      "hashingAlgorithm": "SHA256",
+      "apiVersion":"AvalonMiner11",
+      "name": "A1246",
+      "code": "1246",
+      "model": "A1246",
+      "version": "A",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.038,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.11.1"],
+        "versionData":{
+          "hardwareVersion": "1",
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "Antminer Z15": {
+      "brand": "Antminer",
+      "hashingAlgorithm": "Equihash",
+      "name": "Z15",
+      "code": "Z", 
+      "model": "Z15",
+      "version": "a",
+      "alertDelta":0.8, 
+      "tempNamesRE":"temp2_[123]\\b",
+      "freqNamesRE": "frequency[123]\\b",
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":87,
+        "warm":82,
+        "mild":72
+      },
+      "cardIDs": [1,2,3],
+      "intakeFanName":"fan1",
+      "exhaustFanName":"fan2",
+      "firmwareContentType":"x-gzip",
+      "powerEfficiency":0.00387
+    },
+    "Dragonmint T1": {
+      "brand": "Dragonmint",
+      "hashingAlgorithm": "SHA256",
+      "name": "T1",
+      "code": "1",
+      "model": "T1",
+      "version": "a",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      }
+    },
+    "Dragonmint 16": {
+      "brand": "Dragonmint",
+      "hashingAlgorithm": "SHA256",
+      "name": "16",
+      "code": "1",
+      "model": "16",
+      "version": "a",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      }
+    },
+    "Whatsminer M20S": {
+      "brand": "Whatsminer",
+      "hashingAlgorithm": "SHA256",
+      "apiVersion": "Whatsminer_CG",
+      "name": "M20S",
+      "code": "20",
+      "model": "M20S",
+      "version": "s",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.050,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.9.2"],
+        "versionData":{
+          "hardwareVersion": "1",
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "Whatsminer M21S": {
+      "brand": "Whatsminer",
+      "hashingAlgorithm": "SHA256",
+      "apiVersion": "Whatsminer_CG",
+      "name": "M21S",
+      "code": "21",
+      "model": "M21S",
+      "version": "s",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.050,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.9.2"],
+        "versionData":{
+          "hardwareVersion": "1",
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "Whatsminer M32": {
+      "brand": "Whatsminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "M32",
+      "code": "32",
+      "model": "M32",
+      "version": "s",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.050,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.9.2"],
+        "versionData":{
+          "hardwareVersion": "1",
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "Whatsminer M32S": {
+      "brand": "Whatsminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "M32S",
+      "code": "32s",
+      "model": "M32S",
+      "version": "s",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.050,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.9.2"],
+        "versionData":{
+          "hardwareVersion": "1",
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "Whatsminer M31S": {
+      "brand": "Whatsminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "M31S",
+      "code": "31s",
+      "model": "M31S",
+      "version": "s",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.050,
+      "firmwareLookup" :{
+        "keys": ["Whatsminer v1.3~Whatsminer M31S"],
+        "versionData":{
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "Whatsminer M31S+": {
+      "brand": "Whatsminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "M31S+",
+      "code": "31p",
+      "model": "M31S",
+      "version": "s",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.050,
+      "firmwareLookup" :{
+        "keys": ["Whatsminer v1.4.0~Whatsminer M31S+"],
+        "versionData":{
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "Whatsminer M30S": {
+      "brand": "Whatsminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "M30S+",
+      "code": "30s",
+      "model": "M30S+",
+      "version": "s",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.050,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.9.2"],
+        "versionData":{
+          "hardwareVersion": "1",
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "Whatsminer M30S+": {
+      "brand": "Whatsminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "M30S+",
+      "code": "30p",
+      "model": "M30S+",
+      "version": "s",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.050,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.9.2"],
+        "versionData":{
+          "hardwareVersion": "1",
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },    
+    "Whatsminer M30S++": {
+      "brand": "Whatsminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "M30S++",
+      "code": "30d",
+      "model": "M30S++",
+      "version": "s",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.050,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.9.2"],
+        "versionData":{
+          "hardwareVersion": "1",
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "Whatsminer M50": {
+      "brand": "Whatsminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "M50",
+      "code": "50",
+      "model": "M50",
+      "version": "a",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.030,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.9.2"],
+        "versionData":{
+          "hardwareVersion": "1",
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "Whatsminer M50S": {
+      "brand": "Whatsminer",
+      "hashingAlgorithm": "SHA256",
+      "name": "M50S",
+      "code": "50S",
+      "model": "M50S",
+      "version": "s",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.028,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.9.2"],
+        "versionData":{
+          "hardwareVersion": "1",
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "FsMiner FS7100": {
+      "brand": "FsMiner",
+      "hashingAlgorithm": "X11",
+      "name": "FS7100",
+      "code": "7100",
+      "model": "FS7100",
+      "version": "A",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.063,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 1.0.19",
+        "3.7~cgminer 1.0.18"],
+        "versionData":{
+          "hardwareVersion": "1",
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "FsMiner FS7102": {
+      "brand": "FsMiner",
+      "hashingAlgorithm": "X11",
+      "name": "FS7102",
+      "code": "7102",
+      "model": "FS7102",
+      "version": "B",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.063,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 1.0.32"],
+        "versionData":{
+          "hardwareVersion": "1",
+          "fileSystemTimestamp": "Mon Dec 31 23:59:59 CST 1999"
+        } 
+      }
+    },
+   "Innosilicon A9": {
+      "brand": "Innosilicon",
+      "hashingAlgorithm": "Equihash",
+      "name": "A9",
+      "code": "4",
+      "model": "A9",
+      "version": "a",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.0806,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 1.99.33", "3.4~cgminer a9-1.2.0"], 
+        "versionData":{
+          "hardwareVersion": "2",
+          "fileSystemTimestamp": "Mon Dec 30 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "Innosilicon A10": {
+      "brand": "Innosilicon",
+      "hashingAlgorithm": "Ethash",
+      "name": "A10",
+      "code": "410",
+      "model": "A10",
+      "version": "a",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.0027,
+      "firmwareLookup" :{
+        "keys": ["3.4~cgminer a10-1.1.0"], 
+        "versionData":{
+          "hardwareVersion": "2",
+          "fileSystemTimestamp": "Mon Dec 30 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "Innosilicon A10L": {
+      "brand": "Innosilicon",
+      "hashingAlgorithm": "Ethash",
+      "name": "A10L",
+      "code": "510",
+      "model": "A10L",
+      "version": "a",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.0027,
+      "firmwareLookup" :{
+        "keys": ["3.4~cgminer a10-1.1.0"], 
+        "versionData":{
+          "hardwareVersion": "2",
+          "fileSystemTimestamp": "Mon Dec 30 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "Innosilicon B29+": {
+      "brand": "Innosilicon",
+      "hashingAlgorithm": "Equihash",
+      "name": "B29+",
+      "code": "29",
+      "model": "A9",
+      "version": "a",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.0806,
+      "firmwareLookup" :{
+        "keys": ["3.4~cgminer 4.4.2"], 
+        "versionData":{
+          "hardwareVersion": "2",
+          "fileSystemTimestamp": "Mon Dec 30 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "Innosilicon T2TZ": {
+      "brand": "Innosilicon",
+      "hashingAlgorithm": "SHA256",
+      "name": "T2TZ",
+      "code": "3",
+      "model": "T2",
+      "version": "b",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.0122,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.10.0"], 
+        "versionData":{
+          "hardwareVersion": "2",
+          "fileSystemTimestamp": "Mon Dec 30 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "Innosilicon T3": {
+      "brand": "Innosilicon",
+      "hashingAlgorithm": "SHA256",
+      "name": "T3",
+      "code": "3",
+      "model": "T3",
+      "version": "b",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.0205,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.10.0"], 
+        "versionData":{
+          "hardwareVersion": "2",
+          "fileSystemTimestamp": "Mon Dec 30 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "Innosilicon T3+B": {
+      "brand": "Innosilicon",
+      "hashingAlgorithm": "SHA256",
+      "name": "T3+B",
+      "code": "3",
+      "model": "T3",
+      "version": "D",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.0205,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.10.0"], 
+        "versionData":{
+          "hardwareVersion": "2",
+          "fileSystemTimestamp": "Mon Dec 30 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "Innosilicon T3S": {
+      "brand": "Innosilicon",
+      "hashingAlgorithm": "SHA256",
+      "name": "T3S",
+      "code": "3",
+      "model": "T3",
+      "version": "a",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.0205,
+      "firmwareLookup" :{
+        "keys": ["3.7~cgminer 4.10.0"], 
+        "versionData":{
+          "hardwareVersion": "2",
+          "fileSystemTimestamp": "Mon Dec 30 23:59:59 CST 1999"
+        } 
+      }
+    },
+    "StuMiner U6": {
+      "brand": "StuMiner",
+      "hashingAlgorithm": "X11",
+      "name": "U6",
+      "code": "1",
+      "model": "U6",
+      "version": "a",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 2,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "firmwareUpdatePrefix":"STU_",
+      "powerEfficiency": 0.0048
+    },
+    "ZigMiner Z1 Pro": {
+      "brand": "ZigMiner",
+      "hashingAlgorithm": "SHA256",
+      "name": "Z1 Pro",
+      "code": "1",
+      "model": "Z1 Pro",
+      "version": "a",
+      "alertDelta": 0.8,
+      "uprightUnits": 1,
+      "onsideUnits": 1,
+      "tempBoundaries": {
+        "hot":90,
+        "warm":75,
+        "mild":60
+      },
+      "powerEfficiency": 0.055,
+      "firmwareLookup" :{
+        "keys": ["3.4~cgminer 4.11.1"], 
+        "versionData":{
+          "hardwareVersion": "2",
+          "fileSystemTimestamp": "Mon Dec 30 23:59:59 CST 1999"
+        } 
+      }
+    }
+  }
+}

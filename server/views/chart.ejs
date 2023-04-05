@@ -1,0 +1,35 @@
+<link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+<script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+<style>
+.ct-series-a .ct-line {
+  stroke: blue;
+  stroke-width: 5px;
+}
+
+.ct-chart{
+  background: white;
+  width: 640px;
+  height: 480px;
+}
+
+</style>
+<script>
+  var chart = new Chartist.Line('.ct-chart', {
+  series: [
+    {
+      name: 'chart-series',
+      data: JSON.parse('<%=points%>'.replace(/&#34;/g,'"'))
+    }
+  ]
+}, {
+  axisX: {
+    type: Chartist.FixedScaleAxis,
+    divisor: 12,
+    labelInterpolationFnc: function(value) {
+      return -parseInt((143589652600-value)/(60*60*1000));
+    }
+  }
+});
+</script>
+
+<div class="ct-chart ct-perfect-fourth"></div>

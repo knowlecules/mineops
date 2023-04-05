@@ -1,0 +1,6 @@
+_ant_conf_nettype=Static
+&_ant_conf_hostname=${minerInfo.workerName}-${minerInfo.placement.hall}-${minerInfo.placement.rack}-${minerInfo.placement.shelf}-${minerInfo.placement.position}
+&_ant_conf_ipaddress=${minerInfo.ipAddress}
+&_ant_conf_netmask=${network.netmask}
+&_ant_conf_gateway=${network.gateway}
+&_ant_conf_dnsservers=${network.dnsServer}

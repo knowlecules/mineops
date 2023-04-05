@@ -1,0 +1,63 @@
+{
+  "restApiRoot": "/api",
+  "host": "0.0.0.0",
+  "port": 3000,
+  "remoting": {
+    "context": false,
+    "rest": {
+      "handleErrors": false,
+      "normalizeHttpPath": false,
+      "xml": false
+    },
+    "json": {
+      "strict": false,
+      "limit": "100kb"
+    },
+    "urlencoded": {
+      "extended": true,
+      "limit": "100kb"
+    },
+    "cors": false
+  },
+  "logoutSessionsOnSensitiveChanges": true,
+  "cookieSecret": "saARvFu8O2M39XxI6YVBo3cKX1FbE6R2",
+  "sessionTimeout": 3600,
+  "apis": {
+    "freshdesk": {
+      "fullname": "jason rudland",
+      "email": "jason.k@investments.org",
+      "domain": "hashingpool.freshdesk.com",
+      "apiKey": "Y3oY8Xvt5KKuwzQmWkuj"
+    },
+    "slack": {
+      "fullname": "jason rudland",
+      "email": "jason.k@investments.org",
+      "domain": "mineops.slack.com",
+      "apiKey": "xoxp-301949253169-301848068592-418558562627-1297493e7e3af57cee43c11d7fe67287"
+    }
+  },
+  "arena":{
+    "config":{
+      "queues": [{
+        "name": "web-request",
+        "port": 6379,
+        "host": "127.0.0.1",
+        "hostId": "local"
+      },{
+        "name": "web-response",
+        "port": 6379,
+        "host": "127.0.0.1",
+        "hostId": "local"
+      },{
+        "name": "web-error",
+        "port": 6379,
+        "host": "127.0.0.1",
+        "hostId": "local"
+      }]
+    },
+    "options":{
+      "basePath": "/arena",
+      "disableListen": true
+    }
+  }
+}

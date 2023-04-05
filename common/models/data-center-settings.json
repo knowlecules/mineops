@@ -1,0 +1,40 @@
+{
+  "name": "dataCenterSettings",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "minerIndex": {
+      "type": "number",
+      "required": true,
+      "default": 1
+    },
+    "cabinetName": {
+      "type": "string",
+      "required": true
+    },
+    "cabinetPosition": {
+      "type": "number",
+      "required": true,
+      "default": 1
+    },
+    "staticAssignment": {
+      "type": "boolean",
+      "default": false
+    },
+    "configureMode": {
+      "type": "number",
+      "default": 1
+    },
+    "accountName": {
+      "type": "string",
+      "default": false
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

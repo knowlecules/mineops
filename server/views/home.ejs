@@ -1,0 +1,345 @@
+<%- include partials/header.ejs %>
+<%- include partials/nav.ejs %>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="row" style='padding:10px;background-color: dimgrey;color: white;'>
+    <div class="col-xs-10">
+      <h1>The ultimate ASIC miner provisioning tool</h1>
+    </div>
+  </div>
+  <style>
+    .fa { font-size: 24px;text-align: right;position: absolute;top: 7px;right: 20px;outline: none; }
+    a { transition: all .3s ease;-webkit-transition: all .3s ease;-moz-transition: all .3s ease;-o-transition: all .3s ease; }
+    /* Miner count */
+    a.offline-miners i,.offline-miners h4.list-group-item-heading { color:#130d25; }
+    a.offline-miners:hover { background-color:#130d25; }
+    a.offline-miners:hover * { color:#FFF; }
+    /* Total hashrate */
+    a.repair-miners i,.repair-miners h4.list-group-item-heading { color:#E48A07; }
+    a.repair-miners:hover { background-color:#E48A07; }
+    a.repair-miners:hover * { color:#FFF; }
+    /* overheating-miners */
+    a.overheating-miners i,.overheating-miners h4.list-group-item-heading {color:#b42727;  }
+    a.overheating-miners:hover { background-color:#b42727;  }
+    a.overheating-miners:hover * { color:#FFF; }  
+    
+    #minerFilter {
+      width:460px;
+      font-size:1.15em;
+    }
+    
+    li > span{
+      font-weight:700;
+      padding-right:10px;
+      width:30px;
+    }
+    </style>
+    <script>
+function loadMiners(filterType) {
+  var filterHash = '/miners#' + filterType;
+  var accountName = $("#accountName").val();
+  var minerType = $("#minerTYpe").val();
+  if (accountName){
+    filterHash += " " + accountName;
+  }
+
+  if (minerType){
+    filterHash += " >" + minerType;
+  }
+  window.location.href = filterHash;
+}
+    </script>
+    <br/>
+    <div class="row" style="margin-top:10px">
+      <div class="col-md-2">
+        <div style="padding-top:6px;"><a href="javascript:loadMiners('^recent')" class="list-group-item offline-miners">
+          <h3 class="pull-right">
+            <i class="fa fa-skull-crossbones"></i>
+          </h3>
+          <h4 class="list-group-item-heading" id="minerCount">3</h4>
+          <p class="list-group-item-text">Offline</p>
+      </a></div>
+      </div>
+      <div class="col-md-2">
+        <div style="padding-top:6px;"><a href="javascript:loadMiners('-dead')" class="list-group-item repair-miners">
+          <h3 class="pull-right">
+              <i class="fa fa-triangle-exclamation"></i>
+          </h3>
+          <h4 class="list-group-item-heading" id="totalHashrate">18</h4>
+          <p class="list-group-item-text">Repairs</p>
+      </a></span></div>
+      </div>
+      <div class="col-md-2">
+        <div style="padding-top:6px;"><a href="javascript:loadMiners('-hot')" class="list-group-item overheating-miners">
+          <h3 class="pull-right">
+              <i class="fa fa-temperature-high"></i>
+          </h3>
+          <h4 class="list-group-item-heading" id="averageTemp">34</h4>
+          <p class="list-group-item-text">Overheating</p>
+      </a></span></div>
+    </div>
+    <div class="col-md-2">
+      <select class="form-control miner-props" style="width:190px;left: 70px;"  name="period" id="period"  placeholder="All accounts">
+        <option value="" >Period</option>
+        <option value="fine">fine</option>
+        <option value="minutes">minutes</option>
+        <option value="hourly">hourly</option>
+        <option value="daily">daily</option>
+      </select>
+    </div>
+    <div class="col-md-2 form-control-cell">
+        <% if (user.accountName) { %>
+          <select class="form-control miner-props" style="width:190px;left: 40px;"  name="accountName" id="accountName"  placeholder="All accounts">
+            <option value="" >All accounts</option>
+            <% (user.accountName || "").split(/,/).forEach(function (accountName) { %>
+              <option value="<%=accountName%>"><%=accountName%></option>
+            <% }) %>
+        </select>
+        <% } else { %>
+          <input type="text" class="form-control miner-props" style="width:190px;" name="accountName" id="accountName"  placeholder="All accounts">
+        <% } %>
+      </div>
+      <div class="col-md-1 form-control-cell">
+          <select class="form-control miner-props" style="width:190px;" name="minerType" id="minerType" placeholder="All models">
+            <option value="" >All models</option>
+        </select>
+      </div>
+    </div>
+    <br><br/> 
+    <div class="row" style="margin-top:10px">
+      <canvas id="consumption-chart" width="1080" height="180"></canvas>
+    </div>
+    <br><br/> 
+    <div class="row" style="margin-top:10px">
+      <canvas id="hashrate-chart" width="1080" height="180"></canvas>
+<script>
+let minerTypeList;
+function updateChart(chartId) {
+  const period = $("#period").val() || "hourly";
+  const accountName = $("#accountName").val() || "";
+  if (!accountName) {
+    $("#minerType").val("");
+  } 
+  $("#minerType").prop("disabled",!accountName);
+  const minerType = $("#minerType").val() || "";
+  const isStacked = !!(accountName || minerType);
+
+  $.ajax ({
+    url:  `/trends?period=${period}&accountName=${encodeURIComponent(accountName)}&minerType=${encodeURIComponent(minerType)}&isStacked=${isStacked}` ,
+    method: "GET",
+    dataType: "json",
+    contentType: "application/json; charset=utf-8",
+    success: function (data) {
+      console.log(data);
+      if (!minerType) {
+        loadMinerTypeSelect(data);
+      }
+      if (isStacked ) {
+        data = groupStackableTrends(data, accountName ? "minerType" : "accountName", period);
+      } else if (/^(fine|min)/i.test(period) ) {
+        data.pop();
+      }
+      setChartData(consumeChart, null, data, isStacked);
+      setChartData(hashChart, null, data, isStacked);
+    }
+  });
+}
+
+const groupColors = [
+  { 
+    borderColor: "darkgreen",
+    backgroundColor: "lightgreen"
+  }, { 
+    borderColor: "darkblue",
+    backgroundColor: "lightblue"
+  }, { 
+    borderColor: "#00008B",
+    backgroundColor: "#6495ED"
+  }, { 
+    borderColor: "#006400",
+    backgroundColor: "#8FBC8F"
+  }, { 
+    borderColor: "#DAA520",
+    backgroundColor: "#FFD700"
+  }, { 
+    borderColor: "#663399",
+    backgroundColor: "#9370DB"
+  }, { 
+    borderColor: "#8B4513",
+    backgroundColor: "#F4A460"
+  }, { 
+    borderColor: "#808080",
+    backgroundColor: "#DCDCDC"
+  }
+]
+function loadMinerTypeSelect(data) {
+  let acc = data.reduce((acc, value) => {
+    const keyVal = value.minerType;
+    if (!acc[keyVal]) {
+      acc[keyVal] = true;
+    }
+    return acc;
+  }, {});    
+
+  var minerTypeList = Object.keys(acc).sort();
+  var options = ['<option value="" selected="selected">All models</option>'];
+  for (var i=0; i<minerTypeList.length; i++) {
+   options.push('<option value="'+ minerTypeList[i] + '">' + minerTypeList[i] + '</option>');
+  }
+  $('#minerType').html(options.join("")); 
+}
+
+function groupStackableTrends(data, groupKey, period) {
+  let acc = data.reduce((acc, value) => {
+    const keyVal = value[groupKey];
+    if (!acc[keyVal]) {
+      acc[keyVal] = [];
+    }
+    value.ts = new Date(parseInt(value.id.split("_")[0])).toISOString().replace(/\.\d+z$/i,"");
+    acc[keyVal].push(value);
+    return acc;
+  }, {});     
+
+  let datasets = [];
+  Object.keys(acc).forEach((key, index) => {
+    const list = acc[key];
+    datasets.push({
+      label: list[0][groupKey],
+      data: list,
+      fill: true,
+      ...groupColors[index]
+    });
+  });
+
+  return datasets;
+}
+
+function setChartData(chart, label, data, isStacked) {
+  if (label) {
+    chart.data.labels.push(label);
+  }
+  if (isStacked) {
+    if (!chart._original) {
+      chart._original = {...chart.data.datasets[0]};
+    }
+    chart.data.datasets = data;
+  } else {
+    if (chart._original) {
+      chart.data.datasets[0] = chart._original;
+      chart.data.datasets.splice(1, chart.data.datasets.length-1);
+    }
+    chart.data.datasets[0].data = data;
+  }
+  chart.update();
+}
+
+const consumptionChart = document.querySelector('#consumption-chart').getContext('2d');
+
+const consumeChart = new Chart(consumptionChart, {
+  type: 'line',
+  data: {
+    datasets: [{
+      label: 'Power consumption',
+      data: [],
+      borderColor: 'darkgreen',
+      backgroundColor: 'lightgreen',
+      fill: true,
+      lineTension: 0.4, 
+      animations: false 
+    }]
+  },
+  options: {
+    parsing: {
+        xAxisKey: 'ts',
+        yAxisKey: 'consumptionAll'
+    },
+    responsive: true,
+    plugins: {
+      tooltip: {
+        mode: 'index'
+      },
+    },
+    interaction: {
+      mode: 'nearest',
+      axis: 'x',
+      intersect: false
+    },
+    scales: {
+      x: {
+        title: {
+          display: false,
+          text: 'Time'
+        }
+      },
+      y: {
+        stacked: true,
+        title: {
+          display: true,
+          text: 'Power consumption'
+        },
+        beginAtZero: true
+      }
+    }
+  }
+});
+// setInterval(updateChart);
+
+// Draw chart
+const hashrateChart = document.querySelector('#hashrate-chart').getContext('2d');
+
+const hashChart = new Chart(hashrateChart, {
+  type: 'line',
+  data: {
+    datasets: [{
+      label: 'Hash rate',
+      data: [],
+      borderColor: 'darkblue',
+      backgroundColor: 'lightblue',
+      fill: true,
+      lineTension: 0.4, 
+      animations: false
+    }]
+  },
+  options: {
+    parsing: {
+        xAxisKey: 'ts',
+        yAxisKey: 'hashRateAll'
+    },
+    responsive: true,
+    plugins: {
+      tooltip: {
+        mode: 'index'
+      },
+    },
+    interaction: {
+      mode: 'nearest',
+      axis: 'x',
+      intersect: false
+    },
+    scales: {
+      x: {
+        title: {
+          display: false,
+          text: 'Time'
+        }
+      },
+      y: {
+        stacked: true,
+        title: {
+          display: true,
+          text: 'Hash Rate'
+        },
+        beginAtZero: true
+      }
+    }
+  }
+});
+
+$('#minerType').on('change', function(){updateChart()});
+$('#accountName').on('change', function(){updateChart()});
+$('#period').on('change', function(){updateChart()});
+updateChart();
+</script>
+    </div> 
+    <br><br/> 
+    <br><br/> 
+  <%- include partials/footer.ejs %>

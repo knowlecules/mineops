@@ -1,0 +1,3 @@
+_ant_type=${diagnostic.command || "ping"}&
+_ant_ipaddress=${diagnostic.ipAddress || "8.8.8.8"}&
+number=1

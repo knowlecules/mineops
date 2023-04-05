@@ -1,0 +1,78 @@
+{
+  "name": "dhcpSettings",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "range": {
+      "type": "array",
+      "default": [
+        "192.168.1.1",
+        "192.168.1.253"
+      ]
+    },
+    "netmask": {
+      "type": "string",
+      "default": "255.255.255.0"
+    },
+    "router": {
+      "type": "array",
+      "default": [
+        "192.168.1.1"
+      ]
+    },
+    "broadcast": {
+      "type": "string",
+      "default": [
+        "192.168.1.255"
+      ]
+    },
+    "server": {
+      "type": "string",
+      "default": "192.168.1.x"
+    },
+    "dns": {
+      "type": "array",
+      "default": [
+        "8.8.8.8",
+        "8.8.4.4"
+      ]
+    },
+    "hostName": {
+      "type": "number",
+      "default": "mineops"
+    },
+    "domainName": {
+      "type": "number",
+      "default": "rdc.local"
+    },
+    "timeServer": {
+      "type": "string"
+    },
+    "nameServer": {
+      "type": "string"
+    },
+    "maxMessageSize": {
+      "type": "number",
+      "default": 1500
+    },
+    "leaseTime": {
+      "type": "number",
+      "default": 86400
+    },
+    "renewalTime": {
+      "type": "number",
+      "default": 60
+    },
+    "rebindingTime": {
+      "type": "number",
+      "default": 120
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

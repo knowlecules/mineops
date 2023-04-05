@@ -1,0 +1,9 @@
+Pool1=${pools[0].stratum ? encodeURIComponent("stratum+tcp://" + pools[0].stratum.replace(/^stratum\+tcp:\/\//,"")) : ''}&
+UserName1=${pools[0].username || ""}&
+Password1=${pools[0].password || ""}&
+Pool2=${pools[1].stratum ? encodeURIComponent("stratum+tcp://" + pools[1].stratum.replace(/^stratum\+tcp:\/\//,"")) : ''}&
+UserName2=${pools[1].username || ""}&
+Password2=${pools[1].password || ""}&
+Pool3=${pools[2].stratum ? encodeURIComponent("stratum+tcp://" + pools[2].stratum.replace(/^stratum\+tcp:\/\//,"")) : ''}&
+UserName3=${pools[2].username || ""}&
+Password3=${pools[2].password || ""}

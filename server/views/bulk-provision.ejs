@@ -1,0 +1,190 @@
+<style type="text/css">
+.labelled-checkbox{
+  width:15px;
+  height:15px;
+}
+.checkbox-label{
+  float:left;
+  padding-top:2px;
+  padding-right:4px;
+}
+</style>
+<script>
+$(function (){
+  $(".tri-state").click(function(e) {
+    var el = $(this);
+    var isChecked = (el.val() == "on"); 
+    var isNeither = (!el.val());
+
+    if (isNeither) {
+      el.prop('checked', true);
+      el.prop('indeterminate', false);
+      el.val("on");
+    } else if (isChecked) {
+      el.prop('checked', false);
+      el.val("off");
+    } else {
+      el.prop('indeterminate', true);
+      el.val("");
+    }
+  });
+  $(".tri-state").prop('indeterminate', true).val("").css("opacity", 0.6);
+  $(".tri-state").on('mouseenter', function(){$(this).css("opacity", 1)});
+})
+</script>
+<div class="container" style="width:inherit;">
+  <form id="frmBulkUpdate" name="frmBulkUpdate" onsubmit="return bulkSetMiners()" method="post" action="/api/minerInfos/provisionMinersByType">
+    <input type='hidden' name="ipAddresses" id="ipAddresses" value="<%=ipAddresses.join(',')%>">
+    <fieldset>
+      <legend>Bulk update miners</legend>
+    </fieldset>
+    <div class="form-group">
+        <label for="poolIDs">Pools (<%=pools[0].hashAlgorithm%>)</label>
+        <div class="form-group" style="margin-left:35px;">
+            Primary: <select name="poolIDs" style="margin-left:19px; width:180px;"  id="poolIDs">
+          <% pools.forEach(function(pool){ 
+            const selected = pool.id == poolIDs[0] ? "selected" :'';
+            const poolName = pool.name || (pool.stratum.match(/((?:\d+\.){3}\d+|[^\.\:\/]+)(?:\.\w+)\:\d{2,}/) || ['Unknown'])[1]%>
+            <option value="<%=pool.id%>" title="<%=pool.stratum%>" <%=selected%>><%=poolName%> </option>
+          <%})%>
+        </select>
+      </div>
+      <div class="form-group" style="margin-left:35px;">
+          Secondary: <select name="poolIDs_2" style="margin-left:2px; width:180px;" id="poolIDs_2">
+          <option value=0>None</option>
+          <% pools.forEach(function(pool){ 
+            const selected = pool.id == poolIDs[1] ? "selected" :'';
+            const poolName = pool.name || (pool.stratum.match(/((?:\d+\.){3}\d+|[^\.\:\/]+)(?:\.\w+)\:\d{2,}/) || ['Unknown'])[1]%>
+            <option value="<%=pool.id%>" title="<%=pool.stratum%>" <%=selected%>><%=poolName%> </option>
+          <%})%>
+        </select>
+      </div>
+      <div class="form-group" style="margin-left:35px;">
+            Tertiary: <select name="poolIDs_3" style="margin-left:22px; width:180px;" id="poolIDs_3">
+          <option value=0>None</option>
+          <% pools.forEach(function(pool, index){ 
+            const selected = pool.id == poolIDs[2] ? "selected" :'';
+            const poolName = pool.name || (pool.stratum.match(/((?:\d+\.){3}\d+|[^\.\:\/]+)(?:\.\w+)\:\d{2,}/) || ['Unknown'])[1]%>
+            <option value="<%=pool.id%>"  title="<%=pool.stratum%>" <%=selected%>><%=poolName%></option>
+          <%})%>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="accountName" style="float:left;padding-top:0px;padding-right:10px">Account name:</label>
+        <% if (user.accountName) { %>
+          <select id="accountName"  style="width:180px;" id="accountName">
+            <% (user.accountName || "").split(/,/).forEach(function (account) { %>
+              <option value="<%=account%>" <%=(accountName && account==accountName) ? 'selected':''%>><%=account%></option>
+           <% }) %>
+        </select>
+        <% } else { %>
+          <input type="text" class="form-control" style="width:180px;" id="accountName" name="accountName">
+        <% } %>
+    </div>
+    <div class="form-group">
+      <label for="deployedOn" style="float:left;padding-top:9px;padding-right:20px">Deployed on:</label>
+      <input type="date" class="form-control" name="deployedOn" style="width:180px;"  id="deployedOn">
+    </div>
+    <% if (frequencies && frequencies.length) { %>
+    <hr style="width: 80%;text-align: center;"/>
+    <div class="form-group">
+      <span class="form-group" style="width:100%">
+        <label for="freq">Frequency:</label>
+        <select name="freq" style="margin-left:8px" id="freq">
+          <option value="">Default</option>
+          <% frequencies.forEach(freq => { 
+            var freqVal = freq.replace(/m/ig,'')%>
+            <option value="<%=freqVal%>"><%=freq%></option>
+          <%})%>
+        </select>
+        <label for="volt" style="margin-left:22px" >Voltage:</label>
+        <select name="volt" style="margin-left:8px" id="volt">
+          <option value="">Default</option>
+          <% voltages.forEach(volt => { 
+            var voltVal = (!/\./.test(volt)) ? volt.replace(/\D/ig,'') : volt.replace(/[\.v]/ig,'')+'0'%>
+            <option value="<%=voltVal%>"><%=volt%></option>
+          <%})%>
+        </select>
+      </span>
+    </div>
+    <div class="form-group">
+        <label for="preset">...or recommended preset:</label>
+        <select name="preset" style="margin-left:22px" id="preset">
+          <option value="">Default</option>
+          <% presets.forEach(preset => {
+            var presetVal = preset.split(/v/i)[0].replace(/[m\.]+/ig,'') + '0'; 
+            if (preset.option) { %>
+              <option value="<%=preset.option%>"><%=preset.text%></option>
+            <%} else {%> 
+              <option value="<%=presetVal%>"><%=preset%></option>
+          <%}})%>
+        </select>
+    </div>
+    <%}%>
+      <div class="form-group">
+    <button id="btnUpdatePools" type='submit' style="margin-left:130px;margin-bottom:25px;" class="btn btn-primary">Update pools</button>
+    </div>
+    <div>
+      <span class="form-group" style="display: inline-block;width:20%">
+        <label class="checkbox-label" for="rebootMiners">Reboot:</label>
+        <input class="labelled-checkbox" type="checkbox" name="rebootMiners" title="Reboot the miners" id="rebootMiners" />
+      </span>
+      <span class="form-group" style="display: inline-block;width:18%">
+        <label class="checkbox-label" for="destroyMiners">Purge:</label>
+        <input class="labelled-checkbox" type="checkbox" name="destroyMiners" title="Deletes the miner information from the database."  id="destroyMiners" />
+      </span>
+      <span class="form-group" style="display: inline-block;width:16%">
+        <label class="checkbox-label" for="resetMiners">Reset:</label>
+        <input class="labelled-checkbox" type="checkbox" name="resetMiners" title="Resets the miner to factory settings!" id="resetMiners" />
+      </span>
+      <span class="form-group" style="display: inline-block;width:25%">
+        <label class="checkbox-label" for="persistLogs">Persist logs:</label>
+        <input class="labelled-checkbox" type="checkbox" id="persistLogs" name="persistLogs" title="Persist kernel logs in tmp folder as 'workerName.log'." />
+      </span>
+      <span class="form-group">
+        <button id="btnUpdatePools" type='submit' style="float:right;font-size:14px;" class="btn btn-primary btn-sm">Apply</button>
+      </dspan>
+    </div>
+    <div>
+      <span class="form-group" style="display: inline-block;width:25%">
+        <label class="checkbox-label" for="enableSSHMiners">Enable SSH:</label>
+        <input class="labelled-checkbox" type="checkbox" id="enableSSHMiners" name="enableSSHMiners" title="Enabling SSH allows for firmware updating." />
+      </span>
+      <span class="form-group" style="display: inline-block;width:35%">
+        <label class="checkbox-label" for="enableManagedClocking">Managed clocking:</label>
+        <input class="labelled-checkbox tri-state" type="checkbox" id="enableManagedClocking"  name="enableManagedClocking" title="Enable managed clock asdjustment based on chip temperature." />
+      </span>
+      <span class="form-group" style="display: inline-block;width:28%">
+        <label class="checkbox-label" for="enableStaticIP">Use Static IP:</label>
+        <input class="labelled-checkbox" type="checkbox" id="enableStaticIP"  name="enableStaticIP" title="Enabling static ip allows for local miner info persistence." />
+      </span>
+    </div>
+    <hr style="width: 80%;text-align: center;"/>
+    <div class="form-group">
+      <label for="updateFirmware">Firmware:</label>
+      <select id="updateFirmware"  style="width:250px;margin-left:7px" id="updateFirmware">
+        <option value="">Select ...</option>
+        <option value="LSF">Latest stable firmware</option>
+        <% files.forEach(function(file) { 
+          if (/\bupdate\b/i.test(file)) {%>
+           <option value="overclock">Overclock firmware</option>
+        <%}})%>
+        <option value="">... or specify ...</option>
+        <% files.forEach(function(file) { 
+          const filename = file %>
+          <option value="<%=filename%>"><%=filename%></option>
+        <%})%>
+      </select>
+      <span class="form-group">
+        <button id="btnUpdatePools" type='submit' style="float:right;" class="btn btn-primary btn-sm">Update</button>
+      </dspan>
+    </div>
+  </form>
+  <div class='result'></div>
+</div>
+<script>
+$("#frmBulkUpdate").submit(function(e){
+  e.preventDefault();
+});
+</script>

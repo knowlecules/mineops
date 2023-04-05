@@ -1,0 +1,136 @@
+<%- include partials/header.ejs %>
+<%- include partials/nav.ejs %>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.1/js/jquery.tablesorter.widgets.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.1/js/jquery.tablesorter.combined.min.js"></script>
+<style>
+#minerList {
+  background-color: whitesmoke;
+}
+
+.page {
+  padding: 15px 0 0;
+}
+
+td, th{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+.show-it {
+  overflow: visible !important;
+}
+
+td {
+   padding: 5px !important;
+}
+
+.temp-hot,.glyphicon-fire {
+  color:red;
+}
+
+.temp-warm,.glyphicon-warning-sign {
+  color:#FFBF00;
+}
+
+.temp-mild,.glyphicon-ok {
+  color:green;
+}
+
+.temp-cool {
+  color: blue;
+}
+
+.temp-dead {
+  color:black;
+}
+
+.centered {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.pad-left {
+  padding-left:20px;
+}
+
+.pad-right {
+  padding-right:20px;
+}
+
+@media only screen and (max-width: 640px) {
+  .large-screen {
+    display: none;
+  }
+}
+
+</style>
+<script>
+const log =console.log;
+$(function () {
+  // if user is running mozilla then use it's built-in WebSocket
+  window.WebSocket = window.WebSocket || window.MozWebSocket;
+
+  var connection = new WebSocket(`ws://<%=webSocketHost%>?access_token=<%=accessToken%>`);
+
+  connection.onopen = function () {
+    log("socket open") 
+  };
+
+  connection.onerror = function (error) {
+    log(error)
+  };
+
+  connection.onmessage = function (message) {
+    if (/^{"minerInfos":/.test(message.data || "")) {
+      let shouldSyncTable = $('#autoSync').is(':checked'); 
+      if(shouldSyncTable) {
+        let minerInfos = JSON.parse(message.data).minerInfos;
+        syncDataTable (minerInfos); 
+      }
+    } else {
+      console.log(message.data);
+    }
+  };
+
+  $(".table").tablesorter();
+  $("#bulkCheck").click(function() {
+    $(".miner-select").prop('checked', false);    
+    if ($(this).is(":checked")) {
+      $('tr:visible .miner-select').prop('checked', true);
+    }
+  });
+
+  filterMiners();
+
+  const macAddress = window.location.search.match(/\bmacAddress=([^&]*)(?:&|$)/i)
+  if (macAddress) {
+    loadMiner(macAddress);
+  }
+  
+  // Clicking the miner-type will filter all results by that miner type (model)
+  $(".miner-type").click(function() {
+    let minerTypeFilter = ">" + $(this).text();
+    let minerTypeFilterRe = new RegExp(minerTypeFilter + "\w*\<?(?: +|$)","g");
+    let minerFilter = $("#minerFilter").val();
+    if (!minerTypeFilterRe.test(minerFilter)) {
+      let filter =  minerTypeFilter + "< " + minerFilter;
+      $("#minerFilter").val(filter).keyup();
+    }
+  });
+});  
+
+function syncDataTable (minerInfos) {
+  console.log(" Miner table update started!");
+  minerInfos.forEach((minerInfo) => updateDataTableRow(minerInfo)); 
+  filterMiners();
+}
+
+const getProxyPort = () => '<%=proxyPort%>';
+</script>
+<%- include partials/selector.ejs %>
+<%- include partials/miner-map.ejs %>
+<%- include partials/footer.ejs %>

@@ -1,0 +1,277 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>MineOps - </title>
+    
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js" ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<style>
+body    {
+  padding-top:50px; 
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+
+.modal-iframe{
+  position: relative;
+  display: table; /* This is important */ 
+  width: auto;
+  min-width: 80%;   
+}
+
+.modal-popup{
+  min-width: 30%;   
+}
+
+.modal-body .form-group{
+  margin-bottom:8px;
+}
+
+hr{
+  margin-top:12px;
+  margin-bottom:15px;
+  border-top: 1px solid #cccccc;
+}
+
+.alert {
+  position: fixed;
+  z-index:1;
+  top : 35px;
+  left: 0;
+  right: 0;
+  margin: auto;
+  max-width: 400px;
+}
+
+.wrapper {
+  margin-top: 80px;
+  margin-bottom: 20px;
+}
+
+.form-signin {
+  max-width: 420px;
+  padding: 30px 38px 66px;
+  margin: 0 auto;
+  background-color: #eee;
+  border: 3px dotted rgba(0,0,0,0.1);
+}
+
+.form-signin-heading {
+  text-align:center;
+  margin-bottom: 30px;
+}
+
+.form-control {
+  position: relative;
+  font-size: 16px;
+  height: auto;
+  padding: 10px;
+}
+
+</style>
+  </head>
+  <body class="container-fluid">
+  <div class="alert alert-success alert-dismissible hide" role="alert">
+    <span class="alert-text"> You should check in on some of those fields below. </span>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+
+  <div class="modal" id="iframeModal">
+    <div class="modal-dialog modal-iframe modal-lg">
+      <div class="modal-content ">
+  
+        <div class="modal-body">
+          
+          <div class="close-button">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="embed-responsive embed-responsive-16by9">
+                      <iframe class="embed-responsive-item" frameborder="0" width="1000px" height="800px"></iframe>
+          </div>
+        </div>
+  
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal" id="popupModal">
+    <div class="modal-dialog modal-popup modal-sm">
+      <div class="modal-content ">
+  
+        <div class="modal-body">
+          
+          <div class="close-button">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="">
+            <div id="popupDoc"></div>
+          </div>
+        </div>
+  
+      </div>
+    </div>
+  </div>
+         
+<script>
+window.minerInfos = {}; 
+//Global scripts
+function postJson(url, options, handler, errorHandler) {
+  
+  $.ajax ({
+    url: url,
+    method: "POST",
+    data: JSON.stringify(options),
+    dataType: "json",
+    contentType: "application/json; charset=utf-8",
+    success: handler,
+    error: errorHandler,
+  });
+  return false;
+}
+
+function notify(text) {
+  $(".alert-text").text(text);
+  $(".alert").addClass('show').removeClass('hide fade');
+  setTimeout(() => {
+    $(".alert").addClass('hide fade').removeClass('show');
+  }, 5000)
+}
+
+function layoutCellClicked(macAddress, ip, placement) {
+  let action = $('#layoutClickAction').val();
+  const {ipAddress, condition = {}} = window.minerInfos[macAddress] || {ipAddress:ip};
+  switch (action) {
+    case "reboot":
+      rebootMiner(ipAddress); break;
+    case "remote":
+      loadMiner(macAddress, ipAddress); break;
+    case "logs":
+      showKernelLog(ipAddress, condition.workerName); break;
+    case "position":
+      if (placement) {
+        const provisionSettings = {serialNumber:"", psuSerialNumber:""};  
+        setProviderSettings(provisionSettings);
+        setProviderPosition(placement); 
+      } else {
+        setProvisionSettings(macAddress);
+      }
+      $('#position').trigger('change')
+      break;
+  }
+}
+
+function setProviderPosition(placement) {
+
+  Object.keys(placement).forEach((key) => {
+    const input = $('#' + key);
+    (input.is(':checkbox')) ? input.prop('checked', placement[key]) : input.val(placement[key]);
+  });
+}
+
+function setProviderSettings(provisionSettings) {  
+  Object.keys(provisionSettings).forEach((key) => {
+    const input = $('#' + key);
+    (input.is(':checkbox')) ? input.prop('checked', true) : input.val(provisionSettings[key]);
+  });
+}
+
+function setProvisionSettings(macAddress) {
+  const minerInfo = window.minerInfos[macAddress];
+  const {placement} = minerInfo;
+  const {accountName, workerTypeNumber, serialNumber, psuSerialNumber, psuModel, powerBarId,powerPhase, networkSwitchRef, breakerPanelId, transformerLow, transformerMed} = minerInfo;
+  const provisionSettings = {accountName, workerTypeNumber, serialNumber, psuSerialNumber, psuModel, powerBarId,powerPhase, networkSwitchRef, breakerPanelId, transformerLow, transformerMed};  
+  
+  setProviderPosition({upright:false, ...placement})
+  setProviderSettings(provisionSettings);
+}
+
+function loadMiner(macAddress, ipAddress, inModal) {
+  const hostname = window.location.hostname;
+  const isLocal = /^(localhost|192\.168\.|10\.)/.test(hostname);
+  let minerUrl, baseUrl = "";
+  if (!$('#proxyMinerUI').is(':checked') || isLocal){
+    //TODO: Support other creds than bitmain, stuminer ie http://admin:dragonadmin@192.168.x.x etc...
+    minerUrl = `http://root:root@${ipAddress}/`;
+  } else {
+    const proxyPort = getProxyPort();
+    baseUrl = `http://${hostname}:${proxyPort}/_device_/${ipAddress}/`;
+    minerUrl = `${baseUrl}landing-page.html?_=` + Math.random();
+  }
+
+  if (inModal) {
+    $('#iframeModal').on('shown.bs.modal',function(){   
+      let ifr = $(this).find('iframe');
+      ifr.attr('src', minerUrl);
+      ifr.one ('load', function() {
+        ifr.contents().find("head").append($("<base/>", { href: baseUrl} ));
+      });
+    });
+    $('#iframeModal').modal({show:true});    
+  } else {
+    var win = window.open(minerUrl);
+    win.focus();  
+  }
+}
+
+function rebootMiner(ipAddress, workerName) {
+  const hostname = window.location.hostname;
+
+  $.get({
+    url: `/reboot-miner?ipAddress=${ipAddress}`,
+    dataType: 'json',
+    cache: false,
+    success: function(data) {
+      notify(`Rebooting ${workerName}... be patient.`);
+    },
+    error: function(err) {
+      notify(`Reboot ${workerName} failed!\n\n ${err.message || JSON.stringify(err)}`);
+    }
+  });
+}
+
+function loadRemoteModal(url, data) {
+  $.post(url + '?_=' + Math.random(), data).always(data => {
+    $("#popupDoc").html(data);
+  });
+  $('#popupModal').modal({show:true});        
+}
+
+function ticketMiner(macAddress) {
+  const url = `/ticket-miner`; 
+  const data = {macAddress};
+  loadRemoteModal(url, data);
+}
+
+function showKernelLog(ipAddress, workerName) {
+  var options = { 
+    "ipAddresses" : [ipAddress],
+    "minerUpdates" : { 
+       persistLogs: true
+    }
+  };
+  var action = "/api/minerInfos/provisionMinersByType";
+  
+  postJson(action, options, function (data) {
+    console.log(data);
+    const hostname = window.location.hostname;
+    const hostport = window.location.port ? ":" + window.location.port : "" ;
+    const logUrl = `http://${hostname}${hostport}/tmp/${workerName}.log`; 
+    var win = window.open(logUrl);
+    win.focus();  
+  });
+}
+
+</script>

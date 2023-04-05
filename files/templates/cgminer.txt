@@ -1,0 +1,13 @@
+token=${(html || "").match(/token['"][^'"]+['"]([^'"]+)["']/)[1]}&
+cbi.submit=1&
+cbid.pools.default.coin_type=BTC&
+cbid.pools.default.pool1url=${pools[0].stratum ? encodeURIComponent("stratum+tcp://" + pools[0].stratum.replace(/^stratum\+tcp:\/\//,"")) : ''}&
+cbid.pools.default.pool1user=${pools[0].username || ""}&
+cbid.pools.default.pool1pw=${pools[0].password || ""}&
+cbid.pools.default.pool2url=${pools[1].stratum ? encodeURIComponent("stratum+tcp://" + pools[1].stratum.replace(/^stratum\+tcp:\/\//,"")) : ''}&
+cbid.pools.default.pool2user=${pools[1].username || ""}&
+cbid.pools.default.pool2pw=${pools[1].password || ""}&
+cbid.pools.default.pool3url=${pools[2].stratum ? encodeURIComponent("stratum+tcp://" + pools[2].stratum.replace(/^stratum\+tcp:\/\//,"")) : ''}&
+cbid.pools.default.pool3user=${pools[2].username || ""}&
+cbid.pools.default.pool3pw=${pools[2].password || ""}&
+cbi.apply=${encodeURIComponent("Save & Apply")}

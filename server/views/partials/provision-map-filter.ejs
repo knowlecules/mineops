@@ -1,0 +1,174 @@
+<style>
+label{
+  font-weight: normal;
+  font-size: inherit;
+}
+</style>
+<script lang="javascript">
+
+// Sync hash value with the filter
+$(function () {
+  loadMinerTypeMap();
+
+  const dataHall = loadPageVar('dataHall') || $("#hall").val();
+  const rack =  loadPageVar('rack') || $("#rack").val();
+  
+  const $hallDropdown = $('#hallDropdown');
+  const $rackDropdown = $('#rackDropdown');
+  let rackList;
+  loadRackList($hallDropdown, (items) => {
+    rackList = items;
+    if (dataHall) {
+      $hallDropdown.val(dataHall).trigger('change');
+    }
+  });
+  $rackDropdown.on('change', function() {
+    renderRack();
+  });
+  
+  $hallDropdown.on('change', function() {
+    if (!this.value) {
+      return;
+    }
+    const racks = rackList[this.value];
+    const rackOpts = racks.map(o => {return {value:o.rack, text:o.rack}});
+    injectOptions($rackDropdown, rackOpts);
+    if (rack) {
+      $rackDropdown.val(rack).trigger('change');
+    }
+  }).trigger('change');
+
+});
+
+function loadPageVar (sVar) {
+  return unescape(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + escape(sVar).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
+}
+
+let minerTypeMap;
+function loadMinerTypeMap() {
+  const endpoint = `/api/minerInfos/getMinerTypeSettings`;
+  $.post(endpoint).always(data => {
+    console.log(data);  
+    minerTypeMap = data["typeSettings"];
+  });
+}
+
+function loadRackList($hallDropdown, cb) {
+  const endpoint = `/api/minerInfos/getRackList`;
+  $.post(endpoint).always(data => {
+    console.log(data);  
+    rackList = data?.rackList || {};
+
+    // Fill primary dropdowns
+    let hallOpts = [];
+    Object.keys(rackList).forEach(hallDropdown => {
+      hallOpts.push({value:hallDropdown, text:hallDropdown});
+    }); 
+    injectOptions($hallDropdown, hallOpts);
+    cb(rackList);
+  });
+}
+
+
+function getRackHtml(minerList, colCount = 4) {
+  let rackHtml = '<div class="row racks-row">';
+  let rackCount = 0  
+  let lastRack = null, rackLayout; 
+  minerList.forEach(minerInfo => { 
+    const {placement, macAddress} = minerInfo;
+    const {hall, rack, shelf, position} = placement || {};
+    // Cannot have a zero position or be on a zero shelf
+    if (!shelf || !position) {
+      return;
+    }
+    if (lastRack != rack) {
+      
+      // Render previous rack
+      if (lastRack) {
+        rackHtml += '<div class="column racks-column">' + rackLayout.getTableHtml() + '</div>';
+        if(++rackCount == colCount) {
+          rackHtml += '</div><div class="row racks-row">';
+          rackCount = 0;
+        }
+      }
+      lastRack = rack;
+
+      rackLayout = new RackLayout(rack, hall, minerTypeMap);
+    }
+
+    rackLayout.addCell(shelf, position, minerInfo);
+    window.minerInfos[macAddress] = minerInfo;
+  });
+  if (rackCount < colCount) {
+    rackHtml += '<div class="column racks-column">' + rackLayout.getTableHtml() + '</div>';
+    while(++rackCount < 4) {
+      rackHtml += '<div class="column racks-column"></div>';
+    }
+  }
+  return rackHtml;
+}
+
+function renderRack() {
+  const dataHall = $('#hallDropdown').val();
+  const rack = $('#rackDropdown').val();
+  const endpoint = `/api/minerInfos/getRackLayout?dataHall=${dataHall}&rack=${rack}`;
+  $("#minerList").html(`<img style=" margin-top:100px; display: block;margin-left: auto;margin-right: auto;width: 10%;" src="https://c.tenor.com/k-A2Bukh1lUAAAAj/loading-loading-symbol.gif"/>`);
+
+  $.post(endpoint).always(data => {
+    console.log(data);  
+    const minerInfos = data?.rackLayout || {};
+    const minerList = minerInfos[dataHall] || Object.keys(minerInfos).map(key => minerInfos[key]).flat();
+    const rackHtml = getRackHtml(minerList);
+    $("#minerList").html(rackHtml);
+    const rackRows = $('.racks-row');
+    if(rackRows.length = 1){
+      rackRows.css("display","block");
+    }
+    $(".miner-open").on("click", function() {
+      const macAddress = $("div", this).attr("mac");
+      const placement = macAddress ? "" : JSON.parse($(this).attr("placement") || {});
+      layoutCellClicked(macAddress, null, placement);
+    });
+  });
+}
+
+let initialOpts = {};
+function injectOptions($dropdown, opts) {
+  if (!$dropdown.initialOpts) {
+    $dropdown.initialOpts = $dropdown.html();
+  }
+
+  let optionsHtml = opts.map(opt => "<option value='" + opt.value + "'> " + opt.text + "</option>");
+  $dropdown.html($dropdown.initialOpts + optionsHtml.join(''));
+}
+
+
+</script>
+<div class="row" style="margin:10px">
+  <div class="col-md-2 form-control-cell-title" style="text-align:right">
+    <span class='input-title'>Data Hall</span>
+  </div>
+  <div class="col-md-1 form-control-cell">
+    <select id="hallDropdown" class="form-control" style="width:90px;" id="hallDropdown">
+      <option value="" >Select...</option>
+    </select>
+  </div>
+  <div class="col-md-1 form-control-cell">
+    <select id="rackDropdown" class="form-control" style="width:90px;left:5px;" id="rackDropdown">
+      <option value="" >Rack</option>
+    </select>
+  </div>  
+  <div class="col-md-2 form-control-cell-title"  style="text-align:right">
+    <span class='input-title'>Click to</label>
+  </div>  
+  <div class="col-md-4 form-control-cell">
+    <input type="checkbox" style="display:none" id="proxyMinerUI" checked="checked"/> 
+    <select class="form-control" style="width:240px" name="layoutClickAction" id="layoutClickAction">
+      <option selected value="position">Set position for provisioning</option>
+      <option value="remote">Remote into miner UI</option>
+      <option value="logs">Show logs in new window</option>
+    </select>
+  </div> 
+</div>
+
+

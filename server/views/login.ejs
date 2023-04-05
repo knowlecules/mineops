@@ -1,0 +1,55 @@
+<%- include partials/header.ejs %>
+<style type="text/css">
+body {
+  padding: 50px;
+}
+
+input[type="text"] {
+  margin-bottom: 0px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+input[type="password"] {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+button {
+  margin-top: 20px;
+}
+</style>
+<script>
+
+ toggleSignup = () => {
+  $('#SignUp_Form').toggle();   
+ } 
+
+</script>
+<section>
+  <div class="wrapper">
+    <div class="form-signin">
+    <form action="/login" method="post" name="Login_Form">
+      <h3 class="form-signin-heading">Welcome to MineOps</h3>
+
+      <input type="text" class="form-control" name="email" placeholder="Email Address" required="" autofocus="" />
+      <input type="password" class="form-control" name="password" placeholder="Password" required=""/>
+
+      <button class="btn btn-lg btn-primary btn-block" name="Submit" value="Login" type="Submit">Login</button>
+    </form>
+    <br>
+    <a href="javascript:toggleSignup()">sign up</a>
+    <form style="display: none;" action="/api/users" method="post" name="SignUp_Form" id="SignUp_Form">
+      <h3 class="form-signin-heading">Send access request </h3>
+
+      <input type="text" class="form-control" name="email" placeholder="Email Address" required="" />
+      <input type="password" class="form-control" name="password" placeholder="Password" required=""/>
+      <input type="text" class="form-control" name="accountName" placeholder="Account names" />
+
+      <button class="btn btn-lg btn-primary btn-block" name="Submit" value="Sign up" type="Submit">Sign up</button>
+    </form>
+  </div>
+  </div>
+</section>
+
+<%- include partials/footer.ejs %>

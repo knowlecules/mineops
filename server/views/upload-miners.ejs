@@ -1,0 +1,54 @@
+
+  <div class="container">
+    <form name="uploadForm">
+      <fieldset>
+        <legend>Upload miner property edits</legend>
+      </fieldset>
+      <div>
+        <input class="btn btn-md btn-primary"  style="width:480px;max-width:480px;" id="uploadInput" type="file" name="myFiles" zzzmultiple>
+        <br>
+        <div class="form-group">File: <span id="fileNum">0</span></div>
+        <div class="form-group">Size: <span id="fileSize">0</span></div>
+      </div>
+      <div><input class="btn btn-md btn-primary" type="submit" onclick="uploadFile()" value="Send file"></div>
+    </form>
+  
+    <script>
+    function updateSize() {
+      let nBytes = 0,
+          oFiles = this.files,
+          nFiles = oFiles.length,
+          fileList = "";
+      for (let nFileId = 0; nFileId < nFiles; nFileId++) {
+        nBytes += oFiles[nFileId].size;
+        fileList += oFiles[nFileId].name + "<BR>";
+      }
+      let sOutput = nBytes + " bytes";
+      // optional code for multiples approximation
+      const aMultiples = ["KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
+      for (nMultiple = 0, nApprox = nBytes / 1024; nApprox > 1; nApprox /= 1024, nMultiple++) {
+        sOutput = nApprox.toFixed(3) + " " + aMultiples[nMultiple] + " (" + nBytes + " bytes)";
+      }
+      // end of optional code
+      document.getElementById("fileNum").innerHTML = fileList;
+      document.getElementById("fileSize").innerHTML = sOutput;
+    }
+    // var name = document.getElementById("customFileInput").files[0].name;
+    // var nextSibling = e.target.nextElementSibling
+    // nextSibling.innerText = name
+    async function uploadFile() {
+      let formData = new FormData(); 
+      formData.append("file", uploadInput.files[0]);
+      await fetch('/upload', {
+        method: "POST", 
+        body: formData
+      }).catch((e) => {
+        alert('File failed to upload.', e);
+      }).then(res =>{
+        alert('The file has been uploaded successfully.');     
+      }); 
+    }
+   
+    document.getElementById("uploadInput").addEventListener("change", updateSize, false);
+    </script>
+</div>

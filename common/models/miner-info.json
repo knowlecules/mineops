@@ -1,0 +1,90 @@
+{
+  "name": "minerInfo",
+  "plural": "minerInfos",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "_id": {
+      "type": "object",
+      "_id": true
+    },
+    "macAddress": {
+      "type": "string",
+      "required": true
+    },
+    "ipAddress": {
+      "type": "string",
+      "required": true
+    },
+    "cabinetName": {
+      "type": "string",
+      "required": false
+    },
+    "cabinetPosition": {
+      "type": "number",
+      "required": false
+    },
+    "placement": {
+      "type": "object",
+      "required": false
+    },
+    "minerIndex": {
+      "type": "number",
+      "required": true
+    },
+    "minerType": {
+      "type": "string",
+      "required": true
+    },
+    "workerName": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string",
+      "required": true
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "workerTypeNumber": {
+      "type": "number",
+      "required": true,
+      "default": 0
+    },
+    "accountName": {
+      "type": "string",
+      "required": false
+    },
+    "condition": {
+      "type": "object",
+      "default": {}
+    },
+    "conditionPrime": {
+      "type": "object",
+      "default": {}
+    },
+    "status": {
+      "type": "object",
+      "default": null
+    },
+    "deployments": {
+      "type": "object",
+      "default": null
+    },
+    "logStates": {
+      "type": "object",
+      "default": null
+    }
+  },
+  "mixins": {
+    "Aggregate": true
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

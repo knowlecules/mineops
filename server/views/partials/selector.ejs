@@ -1,0 +1,444 @@
+<style>
+.fa { font-size: 24px;text-align: right;position: absolute;top: 7px;right: 20px;outline: none; }
+a { transition: all .3s ease;-webkit-transition: all .3s ease;-moz-transition: all .3s ease;-o-transition: all .3s ease; }
+/* Miner count */
+a.miner-count i,.miner-count h4.list-group-item-heading { color:#3b5998; }
+a.miner-count:hover { background-color:#3b5998; }
+a.miner-count:hover * { color:#FFF; }
+/* Total hashrate */
+a.total-hashrate i,.total-hashrate h4.list-group-item-heading { color:#00acee; }
+a.total-hashrate:hover { background-color:#00acee; }
+a.total-hashrate:hover * { color:#FFF; }
+/* average-temp */
+a.average-temp i,.average-temp h4.list-group-item-heading {color:#E48A07;  }
+a.average-temp:hover { background-color:#E48A07;  }
+a.average-temp:hover * { color:#FFF; }  
+
+#minerFilter {
+  width:460px;
+  font-size:1.15em;
+}
+
+li > span{
+  font-weight:700;
+  padding-right:10px;
+  width:30px;
+}
+</style>
+
+
+<div class="row col-xs-15">
+  <!--div class="col-xs-4">
+    <div style="padding-top:20px;"> <b id="filterLabel">Filter</b> <input type="text"  id="minerFilter" onkeyup="filterMiners()">
+    </div>
+  </div-->
+  <div class="col-xs-2">
+    <div style="padding-top:20px;" class="form-check form-check-inline">
+      <label for="layoutClickAction">Click to</label>
+      <select name="layoutClickAction" id="layoutClickAction">
+        <option value="remote">Remote into miner UI</option>
+        <option value="reboot">Reboot miner</option>
+        <option value="logs">Show logs in new window</option>
+      </select>
+    </div>
+   </div> 
+   <div class="col-xs-4">
+    <div style="padding-top:20px;" class="form-check form-check-inline">
+      <input class="form-check-input proxyMinerUI" style='margin-left:30px;' type="checkbox" id="proxyMinerUI" checked="checked">
+      <label class="form-check-label proxyMinerUI" for="proxyMinerUI">Proxy miner UI</label>
+    </div>
+  </div>
+</div>
+<br/>
+
+
+<div class="filter-instructions" style="display: none;">
+  <h4>
+    <b>Filter</b> all miners by matching visible text, keywords and using filtering methods
+  </h4>
+  <section>
+    <h5>Filtering methods:</h5>
+    <ul>
+      <li><span>in()</span>all that match eg:'in(ip,192.168.10.100,192.168.11.122)</li>
+      <li><span>dupe()</span>find all duplicates eg:'dupe(mac)'<i>supports mac,ip,workername</i></li>
+      <li><span>expr()</span>evaluate expression eg:'expr(hashrate&lt;10000)'<i>mouse over table headers for available keywords</i></li>
+    </ul>
+  </section>  
+  <section>
+    <h5>keywords:</h5>
+    <ul>
+      <li><span>hot-</span>miners that have hot cards</li>
+      <li><span>warm-</span>miners that have warm cards</li>
+      <li><span>mild-</span>miners that have mild cards</li>
+      <li><span>cool-</span>miners that have cool cards</li>
+      <li><span>dead-</span>miners that have dead cards</li>
+      <li><span>skull-</span>miners that have errors</li>
+      <li><span>power-</span>miners that need to be powered down to recover</li>
+    </ul>
+  </section>  
+  <section>
+    <h5>Special characters:</h5>
+    <ul>
+      <li><span>^</span>not. Precedes a text match. eg: '^hot' means 'not hot'</li>
+      <li><span>&gt;</span>match words that begin with. eg: '&gt;S9' begins with S9</li>
+      <li><span>&lt;</span>match words that end with. eg: 'T17e&lt;' all T17e excludes T17 </li>
+    </ul>
+  </section> 
+  <h4>
+    NB: Click miner's hashrate values to see daily chart.
+  </h4> 
+</div>
+
+<script lang="javascript">
+
+// Sync hash value with the filter
+$(function () {
+  var hash = decodeURIComponent(location.hash.slice(1));
+  if (hash) {
+    $("#minerFilter").val(hash).keyup();
+  }
+
+  $(window).on('hashchange',function(){ 
+    $("#minerFilter").val(decodeURIComponent(location.hash.slice(1)));
+    filterMiners();
+  });
+
+  $("#minerFilter").on('blur',function(){ 
+    location.hash = encodeURIComponent($("#minerFilter").val());
+  });
+
+  if (!(/^(192.168|10)\./).test(location.host)) {
+    $('proxyMinerUI').hide();
+  }
+});
+
+$('#filterLabel').on("mouseenter click", (e) =>{
+  var {x,y} = getMousePosition(e, -30, -30)
+  $(".filter-instructions").css({left:`${x}px`,top:`${y}px`}).show();
+});
+
+$(".filter-instructions").on("mouseleave click",function(e){
+    $(".filter-instructions").hide();
+});
+
+function loadFilterWithIps() {
+  const visibleMiners = $("tr.miner-tag:visible").toArray().map((ele) => $(ele).attr('ip'));
+  $("#minerFilter").val('in(ip,' + visibleMiners.concat(',') + ')');
+}
+
+function textForRegex(str) {
+  return str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
+}
+
+function containsFilter(html, filter) {
+  let filterParts = filter.toUpperCase().split(/\s+/g);
+  let markup = html.toUpperCase();
+  for(var i=0; i< filterParts.length; i++) {
+    let filter = filterParts[i];
+    if (filter[0] === '^') {
+      filter = filter.slice(1);
+      if (markup.indexOf(filter) >= 0) {
+        return false;
+      }
+    } else {
+      if (markup.indexOf(filter) == -1) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function getMousePosition(e, xOffset, yOffset){
+  var xPos = e.pageX;
+  var yPos = e.pageY;
+  var x = xPos + xOffset;
+  var y = yPos + yOffset;
+  return {x,y}
+}
+
+function filterMiners() {
+  function filterRendering(renderMiners) {
+    let miners = [];
+    Object.keys(renderMiners).forEach(minerId => { 
+      if (renderMiners[minerId]) { 
+        miners.push(document.getElementById(minerId));
+      }
+    });
+    return miners;
+  }
+
+  const input = document.getElementById("minerFilter");
+  let miners = $(".miner-tag");
+  let filter = input.value;
+  
+  let allMiners = {};
+  let renderMiners = {};
+  let minerCount=0;
+  let hashrateTotal=0;
+  let tempTotals=0;
+  let tempCounts=0;
+  let temps = null
+  let powerTotal = 0;
+  let filters = {};
+  let isFiltered = false;
+
+  let fncDef = false;
+  while (!!(fncDef = /\b(dupe|expr|in)\((\S+)\)/i.exec(filter))) { 
+    let fncName = fncDef[1].toLowerCase(); 
+    filters[fncName] = fncDef[2];
+    filter = filter.replace(fncDef[0],'');
+    isFiltered = true;
+  }
+
+  if (filters.dupe) {
+    const attrName = filters.dupe.match(/^(mac|ip|worker)/i)[1].toLowerCase() || "mac";
+    for (let i = 0; i < miners.length; i++) {
+      const attrVal = $(miners[i]).attr(attrName);
+      if (attrVal) {
+        if (allMiners[attrVal]) {
+          renderMiners[$(miners[i]).attr("id")] = miners[i];
+          renderMiners[$(allMiners[attrVal]).attr("id")] = allMiners[attrVal];
+        } else {
+          // Track found duplicates
+          allMiners[attrVal] = miners[i];
+        }
+      }
+    }
+    // Allows for boolean AND of in,dupe, expr
+    miners = filterRendering(renderMiners);
+  }
+
+  if (filters.in) {
+    var evalParts = filters.in.match(/\b(mac|ip|worker)(?:[^,]*),(.+)/i);
+    if (evalParts) {
+      var evalAttr = evalParts[1];
+      var reIsValid = new RegExp('\\b(' + textForRegex(evalParts[2]).replace(/,/g,'|') +')\\b');
+      for (let i = 0; i < miners.length; i++) {
+        const attrVal = $(miners[i]).attr(evalAttr);
+        renderMiners[$(miners[i]).attr("id")] = reIsValid.test(attrVal);
+      };
+    }
+    // Allows for boolean AND of in,dupe, expr
+    miners = filterRendering(renderMiners);
+  }
+
+  if (filters.expr) {
+    //evaulate=hashRate<40000
+    var evalParts = filters.expr.match(/([\w\-]+)(\S+)/);
+    var evalAttr = evalParts[1];
+    var evalExpr = evalParts[2];
+    for (let i = 0; i < miners.length; i++) {
+      let attrVal = $('.miner-'+ evalAttr, $(miners[i])).attr("data");
+      const isValid = eval(attrVal + evalExpr);
+      renderMiners[$(miners[i]).attr("id")] = isValid;
+    }
+  }
+
+  $(".miner-tag").toArray().forEach(ele => {
+    let miner = $(ele);
+    if (isFiltered && !renderMiners[miner.attr("id")]){
+      miner.css("display", "none");
+    } else if (!containsFilter(miner.html(), filter)) {
+      miner.css("display", "none");
+    } else {
+      miner.css("display", "");
+      hashrateTotal += parseFloat($(".miner-hashrate", miner).attr("data") || 0);
+      powerTotal += parseInt($(".miner-consumption", miner).attr("data") || 0);
+      tempCounts += $(".miner-temperatures span", miner).length;
+    }
+  });
+
+  var adder = function(a,b){return parseInt(a.innerText || a) + parseInt(b.innerText || b) ;}
+  visibleMiners = $("tr.miner-tag:visible");
+  minerCount = visibleMiners.length;
+  tempTotals = ($(".miner-temperatures span", visibleMiners).toArray().concat([0])).reduce(adder);
+  var priorHashrate = parseInt($("#totalHashrate").html().split("<")[0] || 0);
+  var priorTemperature = parseInt($("#averageTemp").html().split("<")[0] || 0);
+  var currentHashrate =  parseInt(hashrateTotal/minerCount, 10);
+  var currentTemperature = parseInt((tempTotals/tempCounts)*100,10)/100;
+  var powerAvg =  parseInt(powerTotal/minerCount, 10).toLocaleString();
+  var hashrateHtml = currentHashrate.toLocaleString() + '<span class="temp-mild"> (' + powerAvg + 'w)</span>';
+  var averageTempHtml = currentTemperature + '<span class="temp-' + ((currentTemperature > priorTemperature) ? 'hot' : 'mild') + '"> (' + parseInt((currentTemperature - (priorTemperature || currentTemperature))*100)/100 + ')</span>';
+  var minerCountHtml = minerCount + '<span class="temp-cool"> (' + parseInt(powerTotal/1000).toLocaleString() + 'kw)</span>';
+  
+  $("#minerCount").html(minerCountHtml);
+  $("#totalHashrate").html(hashrateHtml); 
+  $("#averageTemp").html( averageTempHtml);
+  console.log("Dashboard values updated: Temp:" + currentTemperature + ", hashrate:" + currentHashrate);
+
+  $(".editable").on("mousedown",function(){
+    $(this).attr("currentValue", $(this).text())
+    $(this).attr("contentEditable",true);
+  }).on("focusout", function(){
+    $(this).attr("contentEditable",false);
+    // Avoiding unneccessary round trips to the server
+    if($(this).text() !== $(this).attr("currentValue")){
+      $(this).attr("currentValue", $(this).text())
+      setMinerProperty($(this));
+    }
+  });
+  
+  $(".miner-hashrate").on("click", function(e){
+    $(".chart-container").show();
+    var miner = $(this).parents('tr');
+    var macAddress = miner.attr("id").substr(4);
+    var workerName = miner.attr("worker");
+    var title = $(".chart-container .chart-title");
+    title.text(`Loading chart for ${workerName}`); 
+    var {x,y} = getMousePosition(e, -30, -100)
+    $(".chart-container").css({left:`${x}px`,top:`${y}px`});
+    chartMiner(macAddress)
+    .then((err) => {
+      title.text(`Daily hashrate for ${workerName || "UNKNOWN"}`); 
+    }).catch((err) => {
+      title.text(err.message); 
+    });
+  });
+
+  $(".chart-container").on("mouseleave click",function(e){
+    $(".chart-container .chart-title").text('');
+    $(".chart-container").hide();
+  });
+}
+
+function throttle(time, func, ctxt=null) {
+  if (!time || typeof time !== "number" || time < 0) {
+      return func;
+  }
+
+  var throttleTimer = 0;
+
+  return function() {
+    var args = arguments;
+    clearTimeout(throttleTimer);
+    throttleTimer = setTimeout(function() {
+      func.apply(ctxt, args);
+    }, time);
+  }
+}
+
+function bulkUpdate() {
+  const url = `/bulk-provision`;
+  const ipAddresses = $('tr:visible .miner-select:checked').map(function(){ return $(this).val()}).get();
+  const hashAlgorithm = $('tr:visible .miner-select:checked').attr('algorithm');
+  const accountName = $('tr:visible .miner-select:checked').attr('accountName');
+  const minerType = $('tr:visible .miner-select:checked').eq(0).parents('tr').find('.miner-type').text().replace(/\D+$/,"");
+  
+  if (!Array.isArray(ipAddresses) || !ipAddresses[0]) {
+    return notify("Check at least one checkbox to bulk update.");
+  }
+
+  const data = {ipAddresses, hashAlgorithm, accountName, minerType};
+  loadRemoteModal(url, data) 
+}
+
+function downloadCSV(csv, filename) {
+  let csvFile = new Blob([csv], {type: "text/csv"});
+  let csvUrl = window.URL.createObjectURL(csvFile);      
+  $('#downloader').attr({ download:filename, href:csvUrl});
+  $('#downloader')[0].click();
+}
+
+function discoverMiners() {
+  var startTime =  Date.now();
+  const discoUrl = `/api/minerInfos/discoverMiners`;
+  $.post(discoUrl).always(data => {
+    console.log(data);  
+    var timeDiff = parseInt((Date.now() - startTime) /1000);
+    notify("Refresh completed in " + timeDiff + " seconds.");
+    filterMiners();
+  });
+}
+
+function exportCabinetFile() {
+  var rows = [];
+  rows.push('placement,minerType,ipAddress,macAddress,workerName,accountName,stratums,usernames,deployedOn,lastScanOn,onlineHours,frequency,hashRateAvg,avgTemp,avgTempStateName,serialNumber,psuSerialNumber,psuModel,networkSwitchRef,breakerPanelId,powerBarId,powerPhase,transformerLow,transformerMed,key(macAddress)')
+
+  $(".miner-tag:visible input[title]").map(function () {
+    rows.push($(this).attr('title'));
+  });
+  downloadCSV(rows.join("\n"), "cabinet_file.csv");
+}
+    
+function bulkSetMiners(e) {
+  let accountName = ($("#accountName").val() || "");
+  let deployedOn  = ($("#deployedOn").val() || "");
+  var options = { 
+    "ipAddresses" : $("#ipAddresses").val().split(","),
+    "poolIDs" : [($("#poolIDs").val() || 1)],
+    "minerUpdates" : { 
+        destroy: $("#destroyMiners").is(":checked")
+      , reboot: $("#rebootMiners").is(":checked")
+      , reset: $("#resetMiners").is(":checked")
+      , persistLogs: $("#persistLogs").is(":checked")
+      , enableSSH: $("#enableSSHMiners").is(":checked")
+      , enableStaticIP: $("#enableStaticIP").is(":checked")
+      , managedClocking: $("#enableManagedClocking").val() || ""
+      , updateFirmware: $("#updateFirmware").val() || ""
+      , workerProperties:{accountName, deployedOn}
+  }};
+  
+  if($("#poolIDs_2").val()) {
+    options.poolIDs.push($("#poolIDs_2").val())
+  }
+
+  if($("#poolIDs_3").val()) {
+    options.poolIDs.push($("#poolIDs_3").val())
+  }
+
+  var freq =  $("#freq").val();
+  var volt =  $("#volt").val();
+  var preset =  $("#preset").val();
+  config = {}
+  if (!isNaN(freq)) {
+    config.frequency = freq;
+  }
+
+  if (!isNaN(volt)) {
+    config.volts = volt;
+  }
+
+  if (/,\*/.test(preset)) {
+    var presetParts = preset.split(/,\s*/);
+    config.frequency = presetParts[0];
+    config.volts = presetParts[1];
+  } else if (/^\d\d?$/.test(preset)) {
+    config.preset = preset;
+  }
+
+  options.minerConfigOptions = config;
+  postJson($("#frmBulkUpdate").attr("action"), options, function (data) {
+    console.log(data);
+    $('#popupModal').modal('toggle');
+    notify('Bulk update', JSON.stringify(data).substr(0,100))
+    if (options.minerUpdates.destroy) {
+      $(".miner-select:checked").closest("tr").remove();
+    }
+  });
+}
+
+function importCabinetFile() {
+  const poolUrl = `/upload-miners`;
+  $.get(poolUrl).always(data => {
+    $("#popupDoc").html(data);
+  });
+  $('#popupModal').modal({show:true});        
+}
+
+function setMinerProperty(ele) {
+  var options = { 
+    "ipAddresses" : [ele.parent('tr').attr("ip")],
+    "minerUpdates" : {workerProperties:{}}
+  };
+  options.minerUpdates.workerProperties[ele.attr("property")] = ele.text()   
+ 
+  postJson("/api/minerInfos/provisionMinersByType", options, function (data) {
+    console.log(data);
+    notify('Properties set', JSON.stringify(data).substr(0,100))
+   });
+}
+    
+
+    
+ </script>

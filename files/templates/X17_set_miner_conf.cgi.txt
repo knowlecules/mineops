@@ -1,0 +1,16 @@
+_ant_pool1url=${pools[0].stratum || ""}&
+_ant_pool1user=${pools[0].username || ""}&
+_ant_pool1pw=${pools[0].password || ""}&
+_ant_pool2url=${pools[1].stratum || ""}&
+_ant_pool2user=${pools[1].username || ""}&
+_ant_pool2pw=${pools[1].password || ""}&
+_ant_pool3url=${pools[2].stratum || ""}&
+_ant_pool3user=${pools[2].username || ""}&
+_ant_pool3pw=${pools[2].password || ""}&
+_ant_nobeeper=false&
+_ant_notempoverctrl=false&
+_ant_fan_customize_switch=false&
+_ant_fan_customize_value=&
+_ant_freq=${isNaN(config.frequency) ? 0 : parseInt(config.frequency)}&
+_ant_voltage=900&
+_ant_work_mode=0

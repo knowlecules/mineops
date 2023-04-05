@@ -1,0 +1,679 @@
+<%- include partials/header.ejs %>
+<script src="https://unpkg.com/html5-qrcode@2.0.9/dist/html5-qrcode.min.js"></script>
+<%- include partials/nav.ejs %>
+<%
+  const CONFIGURE_MODE_DETECT = 1;
+  const CONFIGURE_MODE_PROVISION = 2;
+  const CONFIGURE_MODE_REPOSITION = 3;
+  const CONFIGURE_MODE_DISCOVERY = 4;
+  const {configureMode, equipment ={}} = dataCenterSettings;
+%>
+<script lang="javascript">
+  const CONFIGURE_MODE_DETECT = 1;
+  const CONFIGURE_MODE_PROVISION = 2;
+  const CONFIGURE_MODE_REPOSITION = 3;
+  const CONFIGURE_MODE_DISCOVERY = 4;
+</script>
+<style>
+body    { padding-top:0px; }
+
+#loggingWindow {
+  height:600px;
+  padding:10px;
+}
+
+.log-line:nth-child(even) {
+    background-color: whitesmoke;
+}
+
+.timestamp {
+  white-space: nowrap;
+}
+
+.log-text {
+  white-space: pre-wrap;
+  word-wrap:break-word;   
+  padding-left: 20px;
+}
+
+#provision-ui {
+  padding:15px;
+}
+
+.input-pair{
+  padding-right:10px;
+  padding-top:10px;
+}
+
+.input-title {
+  font-size: 14pt;
+}
+
+#configureMode {
+    color: #fff !important; 
+    background-color: #428bca !important;
+    border-color: #357ebd !important;
+}
+
+.form-control[disabled]{
+ color:#666 !important;
+ opacity: 0.6 
+}
+
+.provision-hide {
+  display: none;
+}
+
+.provision-discovered {
+  outline: 3px solid yellow;
+  outline-offset:-4px;
+}
+
+.provision-setting {
+  outline: 3px solid orange;
+  outline-offset:-4px;
+}
+
+.provision-configured {
+  outline: 0px;
+  outline-offset: 0px;
+}
+
+@keyframes positioned {
+ 	0% {
+    background-color:green;
+ 	}
+ 	100% {
+ 		background: initial;
+ 	}
+}
+
+.provision-positioned {
+	animation: positioned 1.5s;
+}
+
+@keyframes highlight {
+  0% {
+ 		background:  #357ebd;
+ 	}
+ 	100% {
+ 		background: initial;
+ 	}
+}
+
+.fade-original {
+	animation: highlight 1.5s;
+}
+
+@media only screen and (max-width: 1026px) {
+  .xs-shift {
+    padding-left:0px;
+  }
+  #minerList {
+    display: none;
+  }
+  #logs {
+    width:100%;
+    height:240px;
+    overflow: scroll;
+  }
+}
+
+.form-control-cell {
+  padding:0px;
+  padding-right: 15px;
+}
+
+.caret-button {
+  position:absolute;
+  left:125px;
+  top:2px;
+  font-size: 16pt; 
+}
+
+.form-control-cell-title {
+  margin-top:8px;
+}
+
+.form-control {
+  padding: 6px;
+}
+</style>
+<div class="row">
+  <div class="col-md-4" style="min-width:540px;">
+    <div id="provision-ui" class="container-fluid" style='background-color: dimgrey;color: white;'>
+      <div class="row" style="margin-bottom:30px">
+        <div class="col-md-10" >
+          <h3 style='margin-top:8px;'>Data center settings</h3>
+        </div>    
+        <div class="col-md-2">
+          <span style='margin-top:8px;' class="pull-right"><select class="form-control" style="width:120px;" id="configureMode" onchange="setControls(true)" >
+              <option value="1" <%=( configureMode == CONFIGURE_MODE_DETECT)? "selected": "" %> >Detect</option>
+              <option value="2" <%=( configureMode == CONFIGURE_MODE_PROVISION)? "selected": "" %> >Provision</option>
+              <option value="3" <%=( configureMode == CONFIGURE_MODE_REPOSITION)? "selected": "" %> >Reposition</option>
+              <option value="4" <%=( configureMode == CONFIGURE_MODE_DISCOVERY)? "selected": "" %> >Discovery</option>
+              </select>
+          </span>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <div class="col-md-3 form-control-cell-title" >
+          <span class='input-title'>Account</span>
+        </div>
+        <div class="col-md-5 form-control-cell">
+          <% if (user.accountName) { %>
+            <select id="accountName" class="form-control miner-props" style="width:190px;" id="accountName">
+              <option value="" >Choose account!</option>
+              <% (user.accountName || "").split(/,/).forEach(function (accountName) { %>
+                <option value="<%=accountName%>"><%=accountName%></option>
+              <% }) %>
+          </select>
+          <% } else { %>
+            <input type="text" class="form-control miner-props" style="width:190px;" id="accountName">
+          <% } %>
+        </div>
+        <div class="col-md-4">
+            <button id="poolPrioritize" class="btn btn-primary" onclick="poolPriorityModal()">Pools</button>
+        </div> 
+      </div>
+      
+      <div class="row" style="margin-top:10px">
+        <div class="col-md-3 form-control-cell-title" >
+          <span class='input-title'>Data Hall</span>
+        </div>
+        <div class="col-md-3 form-control-cell">
+          <input type="text" id="hall" name="hall" class="form-control miner-props"  style="width:100px;" value="<%=dataCenterSettings.placement?.hall%>">
+        </div>
+        <div class="col-md-2 form-control-cell-title">
+          <span class='input-title'>Rack</span>
+        </div>
+        <div class="col-md-4 form-control-cell">
+          <input type="text" id="rack" name="rack" class="form-control miner-position miner-props" style="width:100px;" value="<%=dataCenterSettings.placement?.rack%>">
+          <input type="hidden" id="dataCenterId" value="<%=dataCenterSettings.id%>">
+          <span>
+            <button class="btn btn-xs btn-primary caret-button" style="left:120px;" onclick="updateDataCenterSettings(false, -1)" title="Previous rack">
+              <i class="fa fa-caret-left"></i></button>
+            <button class="btn btn-xs btn-primary caret-button" style="left:150px;" onclick="updateDataCenterSettings(false, 1)" title="Next rack">
+              <i class="fa fa-caret-right"></i></button>  
+          </span>
+        </div>  
+      </div>  
+      <div class="row" style="margin-top:10px">
+        <div class="col-md-3 form-control-cell-title" >
+          <span class='input-title'>Shelf</span>
+        </div>
+        <div class="col-md-3 form-control-cell">
+          <input type="text" id="shelf" name="shelf" class="form-control miner-position miner-props" style="width:100px;" value="<%=dataCenterSettings.placement?.shelf%>">
+        </div>
+        <div class="col-md-2 form-control-cell-title" >
+          <span class='input-title'>Position</span>
+        </div>
+        <div class="col-md-4 form-control-cell">
+          <input type="text" id="position" name="position" class="form-control miner-position miner-props" style="width:100px;" value="<%=dataCenterSettings.placement?.position%>">
+          <span>
+            <button class="btn btn-xs btn-primary caret-button" style="left:120px" onclick="setNextNumberStates(null, -1)" title="Previous position">
+              <i class="fa fa-caret-left"></i></button>
+            <button class="btn btn-xs btn-primary caret-button" style="left:150px" onclick="updateDataCenterSettings(true)" title="Next position">
+              <i class="fa fa-caret-right"></i></button>  
+          </span>    
+        </div>  
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <div class="col-md-4 form-control-cell-title" >
+          <span class='input-title'>Worker number</span>
+        </div>
+        <div class="col-md-4 form-control-cell">
+          <input type="text" id="workerTypeNumber" class="form-control miner-props" style="width:140px;" id="workerTypeNumber" value="<%=dataCenterSettings.workerTypeNumber%>">
+        </div>
+        <div class="col-md-3 form-control-cell-title">
+          <div class="custom-control custom-switch">
+            <input class="miner-props" type="checkbox" id="upright">
+            <label class="input-title" for="upright" style="font-weight: normal;">Upright</label>
+          </div>
+        </div>
+        <div style="top:0px;left:-12px;" class="col-md-1 form-control-cell">
+          <button type="button" id='setButton' class="btn btn-primary" style="font-size: 140%;" onclick="updateDataCenterSettings()">Set</button>
+        </div>
+      </div>  
+
+      
+      <fieldset style="margin-top:20px">
+        <legend class="scheduler-border">Equipment</legend>
+
+        <div class="row">
+          <div class="col-md-5 form-control-cell-title" >
+            <span class='input-title'>Serial Number</span>
+          </div>
+          <div class="col-md-6 form-control-cell">
+            <input type="text" id="serialNumber" class="form-control miner-props" style="max-width:275px;" name="serialNumber" value="<%=equipment.serialNumber%>">
+          </div>
+          <div class="col-md-1 form-control-cell-title">
+            <i class="glyphicon glyphicon-qrcode scan-miner" id="scan-serialNUmber" style="font-size: 24px;"></i>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:6px">
+          <div class="col-md-5 form-control-cell-title" >
+            <span class='input-title'>PSU Serial Number</span>
+          </div>
+          <div class="col-md-6 form-control-cell">
+            <input type="text" id="psuSerialNumber" class="form-control miner-props" style="max-width:275px;" name="psuSerialNumber" value="<%=equipment.psuSerialNumber%>">
+          </div>
+          <div class="col-md-1 form-control-cell-title">
+            <i class="glyphicon glyphicon-qrcode scan-miner" id="scan-psuSerialNUmber" style="font-size: 24px;"></i>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:6px">
+          <div class="col-md-5 form-control-cell-title" >
+            <span class='input-title'>PSU Model</span>
+          </div>
+          <div class="col-md-7 form-control-cell">
+            <input type="text" id="psuModel" class="form-control miner-props" style="max-width:275px;" name="psuModel" value="<%=equipment.psuModel%>">
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:6px">
+          <div class="col-md-5 form-control-cell-title" >
+            <span class='input-title'>Power Bar ID</span>
+          </div>
+          <div class="col-md-5 form-control-cell">
+            <input type="text" id="powerBarId" class="form-control miner-props" style="max-width:220px;" name="powerBarId" value="<%=equipment.powerBarId%>">
+          </div>
+          <div class="col-md-2 form-control-cell">
+            <select id="powerPhase" class="form-control miner-props" style="max-width:100px;left:8px;top:2px;" name="powerPhase" value="<%=equipment.powerPhase%>">
+              <option value="">Phase</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:6px">
+          <div class="col-md-5 form-control-cell-title" >
+            <span class='input-title'>Network Switch ID</span>
+          </div>
+          <div class="col-md-7 form-control-cell">
+            <input type="text" id="networkSwitchRef" class="form-control miner-props" style="max-width:275px;" name="networkSwitchRef" value="<%=equipment.networkSwitchRef%>">
+          </div>
+        </div>
+    
+        <div class="row" style="margin-top:6px">
+          <div class="col-md-5 form-control-cell-title" >
+            <span class='input-title'>Breaker Panel ID</span>
+          </div>
+          <div class="col-md-7 form-control-cell">
+            <input type="text" id="breakerPanelId" class="form-control miner-props" style="max-width:275px;" name="breakerPanelId" value="<%=equipment.breakerPanelId%>">
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:6px">
+          <div class="col-md-5 form-control-cell-title" >
+            <span class='input-title' title="Low voltage transformer, KVA">Transformer Low</span>
+          </div>
+          <div class="col-md-7 form-control-cell">
+            <input type="text" id="transformerLow" class="form-control miner-props" style="max-width:275px;" name="transformerLow" value="<%=equipment.transformerLow%>">
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:6px">
+          <div class="col-md-5 form-control-cell-title" >
+            <span class='input-title' title="Medium voltage transformer, KVA">Transformer Medium</span>
+          </div>
+          <div class="col-md-7 form-control-cell">
+            <input type="text" id="transformerMed" class="form-control miner-props" style="max-width:275px;" name="transformerMed" value="<%=equipment.transformerMed%>">
+          </div>
+        </div>
+
+      </fieldset>
+     	 	 
+
+      <fieldset style="margin-top:20px">
+        <legend class="scheduler-border">Configuration</legend>
+
+        <div class="row" >
+          <div class="col-md-6">
+            <span class='input-title'>Machines per shelf</span>
+          </div>
+          <div class="col-md-6">
+            <input type="text" id="machinesPerShelf" class="form-control miner-props" style="width:40px;" name="machinesPerShelf" value="<%=dataCenterSettings.machinesPerShelf%>">
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:6px">
+          <div class="col-md-6">
+            <span class='input-title' title="eg hRRSSP\nh=Data hall name\nR=rack char\nS=shelf char\nP=position char">Worker number format </span>
+          </div>
+          <div class="col-md-6">
+            <input type="text" id="minerNumberFormat" class="form-control miner-props" style="width:160px;" name="minerNumberFormat" value="<%=dataCenterSettings.minerNumberFormat%>">
+          </div>
+        </div>
+      </fieldset>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <%- include partials/provision-map-filter.ejs %>
+    <%- include partials/provision-map.ejs %>
+  </div>
+</div>
+<br/>
+
+<div class="row">
+  <div class="col-xs-9" id="logs" >
+    <div id="loggingWindow"></div>
+  </div>
+</div>
+<script lang="javascript">
+
+$(function () {
+  // if user is running mozilla then use it's built-in WebSocket
+  window.WebSocket = window.WebSocket || window.MozWebSocket;
+
+  var connection = new WebSocket(`ws://<%=webSocketHost%>?access_token=<%=accessToken%>`);
+
+  connection.onopen = function () {
+    log("socket open") 
+  };
+
+  connection.onerror = function (error) {
+    log(error)
+  };
+
+  connection.onmessage = function (message) {
+    if (/^{"minerInfos":/.test(message.data || "")) {
+      let minerInfos = JSON.parse(message.data).minerInfos;
+      minerInfos.forEach((minerInfo) =>{
+        const {macAddress, provisionStatus, placement} = minerInfo;
+        const cell = $(`div[mac="${macAddress}"]`).parent("td");
+
+        let priorProvisionState = cell.attr("provisionClass");
+        if (priorProvisionState) {
+          cell.removeClass(priorProvisionState +" fade-original");
+        }
+
+        if (provisionStatus) {
+          if (provisionStatus !== "configured") {
+            let provisionClass = "provision-" + provisionStatus;
+            cell.attr("provisionClass",provisionClass);
+            cell.addClass(provisionClass);
+          } else {
+            cell.addClass("fade-original");
+            // ensure the right cell contents
+            const {shelf, position, rack, hall} = placement;
+            const cellHtml = cell.html();
+            const cellCols = cell.attr("colspan");
+            const cellClass = cell.attr("class");
+            const targetCell = $(`table[rack="${rack}"][hall="${hall}"] tr[shelf="${shelf}"] td:eq(${position})`);
+
+            cell.removeClass().addClass("miner-open bg-temp-empty").html(`<div align="center" class="bg-temp-empty">n/a</div>`);
+            targetCell.attr({"colspan":cellCols, "title":""}).removeClass().addClass(cellClass).html(cellHtml);
+            window.minerInfos[macAddress] = minerInfo;
+          }
+        }
+      });
+      syncDataTable (minerInfos); 
+    } else {
+      log(message.data);
+    }
+  };
+});
+
+setControls();
+$(".form-control").change(() => {
+  $("#setButton").addClass('btn-success').removeClass('btn-danger btn-primary').attr("disabled", false);
+});
+
+$(".miner-position").change(()=>setNextNumberStates(null, 0));
+
+function setControls(isUserAction) {
+  let configureMode = $("#configureMode").val()
+  let isRepositioning = (configureMode == CONFIGURE_MODE_REPOSITION); 
+  let isDetecting = (configureMode == CONFIGURE_MODE_DETECT); 
+ 
+  $(".miner-props").attr("disabled", isDetecting);
+  $("#workerTypeNumber").attr("disabled", isRepositioning || isDetecting);
+  $("#accountName").attr("disabled", isRepositioning || isDetecting);
+
+//  if (isUserAction) {
+    updateDataCenterSettings(false, 0, configureMode);
+ // }
+}
+
+function log(data) {
+  const timestamp = (new Date()).toUTCString().replace(/(^\D+|\D+$)/g,'');
+  
+  let  isJson = false;
+  if (isJson || typeof data === "object") {
+    data = JSON.stringify(data);
+    isJson = true;
+  } else {
+    try {
+      var json = JSON.parse(data);
+      isJson = true;
+    } catch (e) {
+      //Ignore. We are checking for json to prettify rendering
+    }
+  }
+  data = data.replace(/,"/g,', "');
+  let statement = `<div class='log-line row'><div class='timestamp col-md-2'>${timestamp}</div>`;
+  if (isJson) {
+    // todo. Use different markup
+    statement += `<div class='log-text col-md-10'>${data}</div></div>`
+  } else {
+    if(/Settings update requested for/i.test(data)){
+      setNextNumberStates();
+      $("#setButton").addClass('btn-success').removeClass('btn-danger btn-primary').attr("disabled", false);
+    }
+    statement += `<div class='log-text col-md-10'>${data}</div></div>`
+  }
+
+  var ipMac = statement.match(/\D(\d+\.\d+\.\d+\.\d+)\s*,\s*((\w{2}:){5}\w{2})/) 
+  if (ipMac) {
+    var ip = ipMac[1];
+    var mac = ipMac[2];
+    tag = `<a class='show-miner' onclick='loadMiner("${mac}", "${ip}")'>${ip}</a>`;
+    statement = statement.replace(ip, tag);
+  }
+  $('#loggingWindow').show().prepend(statement);
+  $('#winProxy').hide();
+}
+
+function setNextNumberStates(rackDirection, positionDirection=1) {
+  const machinesPerShelf = parseInt($("#machinesPerShelf").val());
+  const minerNumberFormat = $("#minerNumberFormat").val();
+  //Trim trailing non alphaNUmerics from rack field  
+  const rackId = $("#rack").val().replace(/[^a-z0-9]+$/i,'');
+  $("#rack").val(rackId);
+  let rackLetter = rackId.match(/([a-z])$/i);
+  let rackNumber = rackLetter ? rackLetter[1] : (rackId.match(/(\d+)$/) || [,0])[1];
+  let currentWorkerTypeNum = $("#workerTypeNumber").val() || 0;
+  let currentPosition;
+  let currentShelf;
+  
+  // Going up or down one rack requires incrementing the rack
+  if (rackDirection) {
+    let nextRackNumber;
+    if (rackLetter){
+      nextRackNumber = String.fromCharCode(rackLetter[1].charCodeAt(0) + rackDirection);      
+    } else {
+      nextRackNumber = parseInt(rackNumber, 10) + rackDirection;      
+    }
+    $("#rack").val($("#rack").val().replace(new RegExp(rackNumber + "$"), nextRackNumber));  
+    rackNumber = nextRackNumber;
+    $("#rackDropdown").val(rackNumber).trigger('change');
+    currentPosition = 1;
+    currentShelf = 1;
+  } else {
+    currentPosition = parseInt($("#position").val());
+    currentShelf = parseInt($("#shelf").val());
+    currentPosition += positionDirection;
+    if (machinesPerShelf) {
+      if (currentPosition > machinesPerShelf) {
+        currentPosition = 1;
+        currentShelf += 1;  
+      } 
+      if (currentPosition < 1) {
+        currentPosition = machinesPerShelf;
+        currentShelf -= 1;  
+      }
+    } 
+  }
+
+  if (minerNumberFormat) {
+    //Pad zeros for multiple digit positioning
+    currentWorkerTypeNum = getMinerNumber(currentShelf, currentPosition, rackNumber);
+  } else {
+    currentWorkerTypeNum++;
+  } 
+
+  const provisionCell = $(`table.layout-table tr[shelf="${currentShelf}"] td:eq(${currentPosition})`);   
+  $(".miner-open").css({"outline":"0px","outline-offset":"0px"});
+  provisionCell.css({"outline":"3px solid white","outline-offset":"-4px"});
+  
+  
+  $("#shelf").val(currentShelf)
+  $("#position").val(currentPosition)
+  $("#workerTypeNumber").val(currentWorkerTypeNum);
+}
+
+function getMinerNumber(currentShelf, currentPosition, rackNumber){
+  const minerNumberFormat = $("#minerNumberFormat").val();
+  if (minerNumberFormat) {
+    const positionDigits = !minerNumberFormat ? 0 : (minerNumberFormat.match(/P/ig) || []).length;
+    const shelfDigits = !minerNumberFormat ? 0 : (minerNumberFormat.match(/S/ig) || []).length;
+    const rackDigits = !minerNumberFormat ? 0 : (minerNumberFormat.match(/R/ig) || []).length;
+    let currentWorkerTypeNum;
+    if(!rackNumber) {
+      currentWorkerTypeNum = minerNumberFormat.replace(/R+/,'');  
+    } else {
+      currentWorkerTypeNum = minerNumberFormat.replace(/R+/,rackDigits <= 1 ? rackNumber : ("00000000" + rackNumber).substr(-rackDigits));
+    }
+    currentWorkerTypeNum = currentWorkerTypeNum.replace(/P+/, positionDigits <= 1 ? currentPosition : ("00000000" + currentPosition).substr(-positionDigits));
+    currentWorkerTypeNum = currentWorkerTypeNum.replace(/S+/, shelfDigits <= 1 ? currentShelf : ("00000000" + currentShelf).substr(-shelfDigits));  
+    return currentWorkerTypeNum;
+  } else {
+    return shelfDigits + positionDigits;
+  }
+}
+
+function updateDataCenterSettings(skip, nextRack, isModeSelection) {
+  let currentWorkerTypeNum = $("#workerTypeNumber").val() || 0;
+  let configureMode = $("#configureMode").val(); 
+  let isProvisioning = (configureMode == CONFIGURE_MODE_PROVISION); 
+
+  if (!$("#accountName").val() && isProvisioning) {
+    return notify("Please select an account name!");
+  }
+  
+  if (skip) {
+    setNextNumberStates();
+  } else if (nextRack) {
+    setNextNumberStates(nextRack); 
+  }
+
+  const equipmentFields = ["serialNumber", "psuSerialNumber", "psuModel", "networkSwitchRef", "breakerPanelId", "powerBarId", "powerPhase", "transformerLow", "transformerMed"];
+  let equipment = {};
+  equipmentFields.forEach((field) => {
+    equipment[field] = $('#' + field).val()
+  })
+  const payload = {
+    "placement" :{
+      "hall":$("#hall").val(),
+      "rack":$("#rack").val(),
+      "shelf":$("#shelf").val(),
+      "position":$("#position").val(),
+      "upright": /on/i.test($("#upright").val()),
+    },
+    "workerTypeNumber": $("#workerTypeNumber").val(),
+    "staticAssignment": true,
+    "configureMode": $("#configureMode").val(),
+    "accountName": $("#accountName").val(),
+    "machinesPerShelf": $("#machinesPerShelf").val(),
+    "minerNumberFormat": $("#minerNumberFormat").val(),
+    equipment,
+  };
+
+  $("#setButton").addClass('btn-danger').removeClass('btn-success btn-primary').attr("disabled", true);
+
+  if (isModeSelection) {
+    payload.configureModeSelection = configureMode; 
+  }
+
+  const dcId = $("#dataCenterId").val().trim();
+  $.ajax({method:"PATCH", url:'/api/dataCenterSettings/' + dcId, data: payload}).done((data, status) => {
+    log(data);
+    $('#setButton').addClass('btn-danger').removeClass('btn-primary btn-sucesss');
+    if (skip && '<%=dataCenterSettings.createMinerPlaceHolder%>' == 'enabled') {
+      minerPlaceholderModal();
+    }
+  });
+}
+
+function createPlaceHolder(e) {
+  var data = { 
+    "ipAddress" : $("#ipAddress").val(),
+    "macAddress" : $("#macAddress").val(),
+    "minerName" : $("#minerName").val(),
+  };
+  
+  $.ajax ({
+    url:  $("#frmCreatePlaceHolder").attr("action"),
+    method: "POST",
+    data: JSON.stringify(data),
+    dataType: "json",
+    contentType: "application/json; charset=utf-8",
+    success: function (data) {
+      console.log(data);
+      $('#popupModal').modal('toggle');
+    }
+  });
+  return false;
+}
+
+function poolPriorityModal() {
+  const poolUrl = `/prioritize-pools`;
+  $.get(poolUrl).always(data => {
+    $("#popupDoc").html(data);
+  });
+  $('#popupModal').modal({show:true});        
+}
+
+function minerPlaceholderModal() {
+  const poolUrl = `/miner-place-holder`;
+  $.get(poolUrl).always(data => {
+    $("#popupDoc").html(data);
+  });
+  $('#popupModal').modal({show:true});        
+}
+
+function setPoolPriority(id) {
+  var data = { 
+    "priority" : $("#pool_"+ id).val()
+  };
+
+  $.ajax ({
+    url:  "/api/pools/" + id,
+    method: "PATCH",
+    data: JSON.stringify(data),
+    dataType: "json",
+    contentType: "application/json; charset=utf-8",
+    success: function (data) {
+      console.log(data);
+      notify("saved");
+    }
+  });
+  return false;
+}
+
+function syncDataTable (minerInfos) {
+  console.log(" Updating minerInfo", minerInfos);
+  minerInfos.forEach((minerInfo) => updateDataTableRow(minerInfo)); 
+}
+
+const getProxyPort = () => '<%=proxyPort%>';
+
+</script>
+<%- include partials/footer.ejs %>

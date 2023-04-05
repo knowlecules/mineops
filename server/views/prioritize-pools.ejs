@@ -1,0 +1,43 @@
+<div class="container">
+  <form id="frmPoolPrioritize" name="frmPoolPrioritize" onsubmit="return prioritizePools()" method="post" action="/api/pool">
+    <fieldset>
+      <legend>Prioritze pools</legend>
+    </fieldset>
+    <div class="form-group">
+          <% var previousHash = ""; 
+            pools.forEach(function(pool){ 
+              var label = '';
+              const poolName = pool.name || (pool.stratum.match(/((?:\d+\.){3}\d+|[^\.\:\/]+)(?:\.\w+)\:\d{2,}/) || ['Unknown'])[1]
+              const priority = pool.priority;
+              if (pool.hashAlgorithm !== previousHash) {
+                label = `<label>${pool.hashAlgorithm}</label>`;
+                previousHash = pool.hashAlgorithm;
+              }
+            %>
+          <%-label%>  
+          <div class="form-group">
+          <span class="form-group">
+              &nbsp;&nbsp;&nbsp;&nbsp;<%=poolName%>
+          </span>
+          <span class="form-group">
+            <select name="<%=pool.id %>" id="pool_<%=pool.id %>" onchange="setPoolPriority('<%=pool.id %>')">     
+              <% for(var ipool=1; ipool <= 4; ipool++) {
+                var poolVal = ipool <= 3 ? ipool : 99;
+                var poolText = ipool <= 3 ? ipool : "none";
+                var selected = poolVal == priority ? "selected" : ""; 
+                %>
+                <option value="<%=poolVal %>" <%=selected %>> <%=poolText%></option>
+              <% } %>         
+            </select>
+          </span>
+        </div>
+          <%})%>
+      </div>
+  </form>
+  <div class='result'></div>
+</div>
+<script>
+$("#frmPoolPrioritize").submit(function(e){
+  e.preventDefault();
+});
+</script>

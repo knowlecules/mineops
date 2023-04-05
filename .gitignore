@@ -1,0 +1,30 @@
+*.csv
+*.dat
+*.iml
+*.log
+*.out
+*.pid
+*.seed
+*.sublime-*
+*.swo
+*.swp
+*.tgz
+*.xml
+.DS_Store
+.idea
+.project
+.strong-pm
+.env
+coverage
+node_modules
+npm-debug.log
+bower_components
+# dhcp-server/config.json
+# server/db.json
+# Looks like this is npm analytics.
+false/
+bu/
+SECRET
+SECRET-api-keys.json
+package-lock.json
+files/firmware

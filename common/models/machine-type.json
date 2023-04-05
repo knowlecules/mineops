@@ -1,0 +1,24 @@
+{
+  "name": "machineType",
+  "plural": "machineTypes",
+  "base": "PersistedModel",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "ID": {
+      "type": "string",
+      "id": true
+    },
+    "hashingAlgorithm": {
+      "type": "string",
+      "required": true,
+      "default": "X11"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

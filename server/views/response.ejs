@@ -1,0 +1,18 @@
+<% include partials/header %>
+<section>
+  <div class="wrapper">
+    <div class="form-signin">
+    <form action="/login" method="post" name="Login_Form">
+      <h3 class="form-signin-heading"><%= title %></h3>
+      <% if (typeof content !== 'undefined') { %>
+        <p><%- content %></p>
+      <% } %>
+      <a href="<%= redirectTo %>"><%= redirectToLinkText %></a>
+      
+    </form>
+  </div>
+  </div>
+</section>
+
+<h1></h1>
+<% include partials/footer %>

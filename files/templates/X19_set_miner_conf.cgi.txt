@@ -1,0 +1,23 @@
+{
+  "bitmain-fan-ctrl": false,
+  "bitmain-fan-pwm": "100",
+  "miner-mode": "0",
+  "freq-level": "100",
+  "pools": [
+    {
+      "url": "${pools[0].stratum || ''}",
+      "user": "${pools[0].username || ''}",
+      "pass": "${pools[0].password || ''}"
+    },
+    {
+      "url": "${pools[1].stratum || ''}",
+      "user": "${pools[1].username || ''}",
+      "pass": "${pools[1].password || ''}"
+    },
+    {
+      "url": "${pools[2].stratum || ''}",
+      "user": "${pools[2].username || ''}",
+      "pass": "${pools[2].password || ''}"
+    }
+  ]
+}

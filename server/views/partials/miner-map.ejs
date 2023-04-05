@@ -1,0 +1,448 @@
+<link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+<script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+<style>
+.ct-series-a .ct-line {
+  stroke: blue;
+  stroke-width: 2px;
+}
+.chart-container{
+  background: white;
+  position: absolute;
+  border:2px black solid;
+  width:660px;
+  height:240px;
+}
+
+.chart-title {
+  padding:10px;
+}
+
+.ct-label {
+  font-size: 12px;
+  color:darkslategrey;
+}
+
+.ct-point{
+  stroke: blue;
+  stroke-width: 1px;
+}
+</style>
+<style>
+#minerList {
+  background-color: whitesmoke;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.page {
+  padding: 15px 0 0;
+}
+
+td, th{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+.show-it {
+  overflow: visible !important;
+}
+
+td {
+   padding: 5px !important;
+}
+
+.temp-hot,.glyphicon-fire {
+  color:red;
+}
+
+.repair-fan,.error {
+  font-size: 16px; 
+  color:navy;
+}
+
+.fa-power-off {
+  color:maroon;
+}
+
+.fa-skull-crossbones {
+  color:black;
+}
+
+.fa-triangle-exclamation {
+  color:#FFBF00;
+}
+
+.bg-temp-hot {
+  background-color:red;
+  color: white;
+  font-weight: bold;
+}
+
+.bg-temp-warm{
+  background-color:orange;
+  color: white;
+  font-weight: bold;
+}
+
+.bg-temp-mild {
+  background-color:limegreen;
+  color: white;
+  font-weight: bold;
+}
+
+.bg-temp-cool {
+  background-color: deepskyblue;
+  color: white;
+  font-weight: bold;
+}
+
+.bg-temp-dead {
+  background-color:rgb(19, 18, 18);
+  color: white;
+  font-weight: bold;
+}
+
+.bg-temp-empty {
+  background-color:rgb(199, 199, 199);
+  color: black;
+  font-weight: bold;
+}
+
+td, th{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border:1px solid black;
+  max-width: 20px;
+  max-height: 20px;
+}
+
+td {
+   padding: 5px !important;
+}
+
+.shelf-num{
+  width: 30px;
+  max-width: 30px;
+  text-align: right;
+}
+
+.shelf-row{
+  height: 48px;
+}
+
+.layout-table {
+   margin-bottom: 20px;
+}
+
+.centered {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.pad-left {
+  padding-left:20px;
+}
+
+.pad-right {
+  padding-right:20px;
+}
+
+@media only screen and (max-width: 640px) {
+  .large-screen {
+    display: none;
+  }
+}
+
+.fa-lock-open {
+  color:goldenrod;
+}
+
+.fa-lock {
+  color:#804A00;
+}
+
+.ssh-state {
+  float:right;
+  margin-right:20px;
+}
+
+.filter-instructions{
+  background: white;
+  position: absolute;
+  border:2px black solid;
+  padding:10px;
+  width:660px;
+  height:460px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.row {
+  display: flex;
+  margin-left:-5px;
+  margin-right:-5px;
+}
+
+.column {
+  flex: 50%;
+  padding: 5px;
+}
+
+.rack-title {
+  font-weight: bold;
+  font-size: large;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 100%;
+  border: 1px solid #ddd;
+}
+
+th, td {
+  padding: 6px;
+  height:30px;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.miner-open, .miner-state {
+    cursor: pointer;
+}
+</style>
+
+<div class="chart-container" style="display: none;">
+  <div class="chart-title text-center" >Daily hashrate chart</div>
+  <div class="ct-chart ct-perfect-fourth" ></div>
+</div>
+
+<div class="row" style="overflow:scroll; height:920px">
+  <div id="minerList" style="width:100%" >
+    <div class="table-responsive">          
+<% 
+
+const getTempStateName = function (temperature, tempBoundaries) {
+  tempBoundaries = tempBoundaries ||  {"hot":90,"warm":80,"mild":70};
+  if (temperature >= tempBoundaries.hot) {
+    return 'hot';
+  } 
+  else if (temperature >= tempBoundaries.warm) {
+    return 'warm';
+  } 
+  else if (temperature >= tempBoundaries.mild) {
+    return 'mild';
+  } 
+  else if (temperature == 0) {
+    return 'dead';
+  } 
+  return 'cool';  
+}   
+
+function RackLayout(rack, hall, minerTypeMap) {
+
+  rack = rack;
+  hall = hall;
+  minerTypeMap = minerTypeMap;
+  
+  cell = [];
+  shelfUnitsCount = 3; //default
+  shelvingUnits = []; //default
+  shelvesCount = 1; //default
+
+  this.addCell = function(shelf = 0, position = 0, minerInfo) {
+    shelf = parseInt(shelf)
+    position = parseInt(position)
+    if (!cell[shelf]) {
+      cell[shelf] = []
+    }
+    
+    if (cell[shelf][position]) {
+      console.warn("Duplicate position within the rack", minerInfo);
+      return;
+    }
+
+    const {placement = {}, minerType} = minerInfo;
+    const {upright} = placement;
+    const {uprightUnits, onsideUnits, tempBoundaries} = minerTypeMap[minerType] || {};
+    minerInfo.shelvingUnits = upright ? uprightUnits : onsideUnits;
+    cell[shelf][position] = minerInfo;
+    
+    if (!shelvingUnits[shelf]) {
+      shelvingUnits[shelf] = 0;
+    }
+    shelvingUnits[shelf] += minerInfo.shelvingUnits;
+
+    if (shelvingUnits[shelf] > shelfUnitsCount) {
+      shelfUnitsCount = shelvingUnits[shelf];
+    }
+
+    if (shelf > shelvesCount) {
+      shelvesCount = shelf;
+    }
+  }       
+
+  this.getTableHtml = function() {
+    let tableHtml = [];
+    if (!hall && !rack) {
+      return "";
+    }
+    const minerList = minerInfos[dataHall] || minerInfos;
+    tableHtml.push(`<span class="rack-layout"><table class="layout-table" hall="${hall}" rack="${rack}"><tr class="rack-title-row"><th class="rack-title" colspan="${shelfUnitsCount+1}">&nbsp;&nbsp;${hall}, Rack: ${rack}</th></tr>`);
+    tableHtml.push('<tr class="rack-header"><th></th>');
+    for (let ipos=1; ipos <= shelfUnitsCount; ipos++){
+      tableHtml.push(`<th>${ipos}</th>`);
+    }
+    tableHtml.push('</tr>');
+    
+    for(let ishelf=1; ishelf <= shelvesCount; ishelf++) {
+      tableHtml.push(`<tr class="shelf-row" shelf="${ishelf}"><td class="shelf-num">${ishelf}</td>`);
+      let shelfUnitsConsumed = 0;  
+      for (let ipos=1; ipos <= shelfUnitsCount && shelfUnitsConsumed < shelfUnitsCount; ipos++){
+        const minerInfo = !cell[ishelf] ? null : cell[ishelf][ipos];
+        
+        if (minerInfo) {
+          let  {
+            placement, workerName, accountName, model, modelType, minerType, ipAddress, macAddress, logStates = {}
+            , condition = {}, conditionPrime = {}, serialNumber, runtimeState
+            , psuSerialNumber, psuModel, breakerPanelId, powerBarId,powerPhase, transformerLow, transformerMed,             
+          } = minerInfo;
+          const {shelf, position} = placement;
+          let {temperatures=[0], timestamp, hashRate, hashRateAvg = 0, exhaustSpeed, intakeSpeed:fanSpeeds} = condition;
+          let intakeSpeed =  Array.isArray(fanSpeeds) ? Math.min(...fanSpeeds) : fanSpeeds;
+          let errors = logStates && Array.isArray(logStates.errors) ? minerInfo.logStates.errors : [];
+          
+          if (runtimeState === "hashing") {
+            runtimeState = '';
+          }
+          
+          const { hashRate:hashRatePrime, hashRateAvg:hashRateAvgPrime = 0} = conditionPrime || {};
+          const temp = Math.max(...temperatures) || 0;
+          const minerTyped = minerTypeMap[minerType] || {};
+          const {tempBoundaries} = minerTyped;
+          const tempClass = getTempStateName(temp, tempBoundaries);
+
+          const colspan = minerInfo.shelvingUnits;
+          shelfUnitsConsumed += colspan;
+
+          hashRateAvg =  parseInt(hashRate || hashRateAvg); 
+          let hashRateBestAvg = parseInt(hashRatePrime || hashRateAvgPrime);
+          let hashRatePerf = Math.round(hashRateAvg / (hashRateBestAvg || hashRateAvg || 1) * 20) * 5;
+          let coldBoot = hashRateAvg < hashRateBestAvg*0.8;
+
+          let lastScanTitle = "never";
+          let lastScan = "never";
+          
+          if (condition && timestamp) {
+            const priorScanHoursDiff =  (Date.now() - timestamp)/(60*60*1000);
+            lastScanTitle = timestamp.toUTCString();
+            lastScan = "recent";
+            
+            if (priorScanHoursDiff > 24 ) {
+              lastScan = parseInt(priorScanHoursDiff/24, 10) + " days";
+            } else if (priorScanHoursDiff > 1 ){
+              lastScan = parseInt(priorScanHoursDiff, 10) + " hours";
+            }  
+
+            if(/^1\s/.test(lastScan)) {
+              lastScan = lastScan.replace(/s$/,'');
+            }
+          }
+
+          let glyphHtml = ""
+          let glyphNode = ""
+          let glyphClass="";
+          let glyphTitle="";
+          if (lastScan === "recent") {
+            // Network connection is not really an issue if the miner is still mining
+            if (errors.length === 1 && /network connection lost/i.test(errors[0]) && hashRatePerf > 10) {
+              errors = [];
+            }
+
+            // Show fan repair icon when miner currently underperforming and poor fan speed
+            let brokenHashBoards = !temperatures ? 0 : temperatures.filter(i => !i).length;
+            if (hashRatePerf < 10 && (intakeSpeed < 2000 || exhaustSpeed < 2000)) {
+              glyphTitle += "Exhaust=" + exhaustSpeed + ", All fans=" + fanSpeeds ;
+              glyphClass="material-icons repair-fan";   
+              glyphNode="mode_fan_off";   
+            } else if (coldBoot) {
+              glyphClass="fas fa-power-off";
+              glyphTitle="Power off miner till PSU fan stops! (" + new Intl.NumberFormat('en-US', {maximumSignificantDigits: 5}).format(hashRatePrime) + ")";
+            } else if (brokenHashBoards) {
+              glyphClass="fas fa-triangle-exclamation";
+              glyphTitle= brokenHashBoards + " inactive hash boards.";
+            } else if (errors.length) {
+              glyphClass="fas fa-skull-crossbones";
+            }
+          } else {
+            glyphClass="fas fa-link-slash";   
+          }
+
+          if (glyphClass) {
+            glyphTitle += (glyphTitle ? '\n' :'') + errors.join('');
+            glyphHtml = `<i class="miner-state ${glyphClass}" title="${glyphTitle}">${glyphNode}</i>`;
+          }
+
+          const titleText = `${ipAddress}, ${macAddress}  \n${accountName}.${workerName} \nHashrate: ${parseInt(hashRate||0)} \nLast scan: ${lastScan} \nTemperatures: ${temperatures} \nFan speeds: ${fanSpeeds} \nPosition: [${shelf}.${position}]`;
+          tableHtml.push(`<td  colspan="${colspan}" align="center" class="miner-tag bg-temp-${tempClass}" id="cell_${macAddress}" mac="${macAddress}" ip="${ipAddress}" worker="${workerName}" title="${titleText}"> ${glyphHtml} &nbsp;<span class="miner-open" onclick="layoutCellClicked('${macAddress}','${ipAddress}')" >${model}</span></td>`);            
+        } else if (shelfUnitsConsumed < shelfUnitsCount) {
+          shelfUnitsConsumed += 1;
+          tableHtml.push(`<td align="center" class="bg-temp-empty">n/a</td>`);
+        }
+      }
+      tableHtml.push('</tr>');
+    }
+    tableHtml.push('</table></span>');
+    return tableHtml.join('');
+  }
+
+}
+
+let lastRack = null, rackLayout; 
+const minerList = minerInfos[dataHall] || Object.keys(minerInfos).map(key => minerInfos[key]).flat();
+%><div class="row"><%
+let rackCount = 0  
+let colCount = 4
+minerList.forEach(minerInfo => { 
+  const {placement} = minerInfo;
+  const {hall, rack, shelf, position} = placement || {};
+  // Cannot have a zero position or be on a zero shelf
+  if (!shelf || !position) {
+    return;
+  }
+  if (lastRack != rack) {
+    
+    // Render previous rack
+    if (lastRack) {
+      %><div class="column"><%-rackLayout.getTableHtml()%></div><%
+      if(++rackCount == colCount) {
+        %></div><div class="row"><%
+          rackCount = 0;
+        }
+    }
+    lastRack = rack;
+
+    rackLayout = new RackLayout(rack, hall, minerTypeMap);
+  }
+
+  rackLayout.addCell(shelf, position, minerInfo);
+});
+if (rackCount < colCount) {
+  %><div class="column"><%-rackLayout.getTableHtml()%></div><%
+  while(++rackCount < 4) {
+    %><div class="column"></div><%
+  }
+}%>
+</div>
+</div>
+  </div>
+</div>

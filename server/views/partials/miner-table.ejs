@@ -1,0 +1,698 @@
+<link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+<script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+<style>
+.ct-series-a .ct-line {
+  stroke: blue;
+  stroke-width: 2px;
+}
+.chart-container{
+  background: white;
+  position: absolute;
+  border:2px black solid;
+  width:660px;
+  height:240px;
+}
+
+.chart-title {
+  padding:10px;
+}
+
+.ct-label {
+  font-size: 12px;
+  color:darkslategrey;
+}
+
+.ct-point{
+  stroke: blue;
+  stroke-width: 1px;
+}
+</style>
+<style>
+#minerList {
+  background-color: whitesmoke;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.page {
+  padding: 15px 0 0;
+}
+
+td, th{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+.show-it {
+  overflow: visible !important;
+}
+
+td {
+   padding: 5px !important;
+}
+
+.temp-hot,.glyphicon-fire {
+  color:red;
+}
+
+.repair-fan,.error {
+  font-size: 16px; 
+  color:navy;
+}
+
+.fa-power-off {
+  color:maroon;
+}
+.temp-warm,.glyphicon-warning-sign {
+  color:#FFBF00;
+}
+
+.temp-mild,.glyphicon-ok {
+  color:green;
+}
+
+.temp-cool {
+  color: blue;
+}
+
+.temp-dead {
+  color:black;
+}
+
+.centered {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.pad-left {
+  padding-left:20px;
+}
+
+.pad-right {
+  padding-right:20px;
+}
+
+@media only screen and (max-width: 640px) {
+  .large-screen {
+    display: none;
+  }
+}
+
+.fa-lock-open {
+  color:goldenrod;
+}
+
+.fa-lock {
+  color:#804A00;
+}
+
+.ssh-state {
+  float:right;
+  margin-right:20px;
+}
+
+.filter-instructions{
+  background: white;
+  position: absolute;
+  border:2px black solid;
+  padding:10px;
+  width:660px;
+  height:460px;
+}
+</style>
+
+<div class="chart-container" style="display: none;">
+  <div class="chart-title text-center" >Daily hashrate chart</div>
+  <div class="ct-chart ct-perfect-fourth" ></div>
+</div>
+
+<div class="row">
+  <div id="minerList" class="col-xs-15">
+    <div class="table-responsive">          
+      <table class="table" id="minerInfoDataTable">
+        <thead>
+          <tr>
+            <th class='provision-hide large-screen'><input type="checkbox" id='bulkCheck'></th>
+            <th class='provision-hide'>State</th>
+            <th>Position</th>
+            <th title="workerName">Worker</th>
+            <th class='large-screen' title="accountName">Account</th>
+            <th class='large-screen'>Pool</th>
+            <th class='large-screen'>Model</th>
+            <th class='provision-hide text-right'><span class='pad-right' title="hashrate">Hashrate</span></th>
+            <th class='provision-hide text-right'><span class='pad-right' title="hashrate-daily">Daily Avg</span></th>
+            <th class='provision-hide large-screen text-right'><span class='pad-right'>Temperature</span></th>
+            <th class='provision-hide large-screen centered'>Frequency</th>
+            <th class='provision-hide large-screen centered' title='consumption'>Power</th>
+            <th class='provision-hide large-screen centered' title='error-rate'>Errors</th>
+            <th class='provision-hide large-screen centered' title='reject-rate'>Rejects</th>
+            <!--th class='large-screen centered'>Latency</th-->
+            <th class='large-screen centered'>Firmware</th>
+            <th class='large-screen centered'>Last scan</th>
+            <th class='large-screen centered'>Awake</th>
+            <th class='large-screen centered'>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% 
+          function getTempStateName (temperature, tempBoundaries) {
+            tempBoundaries = tempBoundaries ||  {"hot":90,"warm":80,"mild":70};
+            if (temperature >= tempBoundaries.hot) {
+              return 'hot';
+            } 
+            else if (temperature >= tempBoundaries.warm) {
+              return 'warm';
+            } 
+            else if (temperature >= tempBoundaries.mild) {
+              return 'mild';
+            } 
+            else if (temperature == 0) {
+              return 'dead';
+            } 
+            return 'cool';  
+          }          
+
+          minerInfos.forEach(function (minerInfo) { 
+              let minerStatus = minerInfo.condition || {};
+              let minerPrimeStatus = minerInfo.conditionPrime || {};
+              let minerUltimateStatus = minerInfo.conditionUltimate || {};
+              let {diagnostic = {}} = minerStatus;
+              let tempList = 'n/a';
+              let glyphName = 'ok'
+              let hasDead = false;
+              let hasHot = false;
+              let isOnline = !minerStatus.offlineTimestamp;
+              let runtimeState = minerInfo.runtimeState;
+              if (runtimeState === "hashing") {
+                runtimeState = '';
+              }
+              let offlineTooLong = !isOnline && Date.now() - minerStatus.offlineTimestamp > 3*24*60*60*1000;
+              let hashRateAvg =  parseInt(minerStatus.hashRate || 0); // minerStatus.hashRateAvg || 
+              let hashRateBestAvg = parseInt(minerPrimeStatus.hashRate || minerPrimeStatus.hashRateAvg || 0);
+              let hashRateDailyAvg = hashRateAvg;
+              if (minerInfo.trends) {
+                const {fine=[], hourly=[], priorHours=[]} = minerInfo.trends;
+                let trendHistory = fine.concat(hourly.concat(priorHours).slice(23)); 
+                hashRateDailyAvg = parseInt(trendHistory.reduce((a,b)=> a +  b.hashRate||0,0)/ trendHistory.length);          
+              }
+              let hashRatePerf = Math.round(hashRateAvg / (hashRateBestAvg || hashRateAvg || 1) * 20) * 5;
+              let stratums = '';
+              let usernames = '';
+              let accountName = minerInfo.accountName;
+              let workerName = minerInfo.workerName;
+              let minerTyped = minerTypeMap[minerInfo.minerType] || {};
+              let tempBoundaries = minerTyped.tempBoundaries;
+              let fileSystemDate = new Date(minerInfo.fileSystemTimestamp)
+              let firmware = fileSystemDate.getFullYear() > 2015 ? (fileSystemDate).toLocaleDateString("en-US") : minerInfo.systemLogicVersion;
+              let intakeSpeed = parseInt(minerStatus.intakeSpeed,10);
+              let exhaustSpeed = parseInt(minerStatus.exhaustSpeed,10);
+              let repairHtml = "";
+              let errors = minerInfo.logStates && Array.isArray(minerInfo.logStates.errors) ? minerInfo.logStates.errors : [];
+              let onlineHours = !minerStatus.elapsed ? "Asleep" : parseInt(minerStatus.elapsed/60/60*10)/10;
+              let hashRateUltimate = (minerUltimateStatus.hashRateAvg || minerUltimateStatus.hashRate);
+              let coldBoot = hashRateUltimate > hashRateAvg && hashRateBestAvg < hashRateUltimate*0.8;
+              let sshLockedIcon = minerInfo.sshEnabled == "open" ? "lock-open" : (minerInfo.sshEnabled == "locked" ? "lock" : "question-circle") ;
+              let hardwareErrors = minerStatus?.hardwareErrors?.[0] ? minerStatus.hardwareErrors : [0];
+              let errorCount = hardwareErrors.reduce((a,b) => parseInt(a,10)+parseInt(b,10))
+              let errorRate  = parseInt(errorCount/((minerStatus.elapsed || 1)/60)); 
+              let rejectRate =  parseInt((minerStatus.rejected || 0)/(minerStatus.accepted || 1)*1000)/10; 
+              let latency =  !diagnostic ? 0 : parseInt((diagnostic.latency || 0)*10)/10; 
+            
+              // TODO. Handle in query on server. Allow for bulk deactivating
+              if (offlineTooLong) {
+                // return false;
+              }
+              if (minerStatus.pools && Array.isArray(minerStatus.pools) ) {
+                for(var ipool=0; ipool < 3; ipool++){
+                  if (minerStatus.pools[ipool] && minerStatus.pools[ipool].url) {
+                    stratums += minerStatus.pools[ipool].url + ";";
+                    usernames += minerStatus.pools[ipool].user + ";";
+                  }
+                }
+              }
+
+              let totalTemps = 0
+              let numTemps = 0;  
+              if (!runtimeState && minerStatus.temperatures && Array.isArray(minerStatus.temperatures) ) {
+                numTemps = minerStatus.temperatures.length;  
+                tempList =  minerStatus.temperatures.map(temp => {
+                  let temperature = parseInt(temp, 10);
+                  let tempStateName = getTempStateName (temperature, tempBoundaries);
+                  let classTemp = `temp-${tempStateName}`;
+                  totalTemps += temperature;
+                  if (tempStateName  == 'hot') {
+                    hasHot = true;
+                  } 
+                  else if (tempStateName  == 'dead') {
+                    hasDead = true;
+                    numTemps --;
+                  } 
+                  return "<span class='" + classTemp + "'>" + temperature + "</span>";
+                }).join("/");
+                if (hashRatePerf < 60) {
+                  glyphName = 'fire';
+                } else if (hasHot || hasDead || hashRatePerf < 85) {
+                  glyphName = 'warning-sign';
+                }
+              } else {
+                tempList = runtimeState || "offline";            
+              }
+
+              let initialTimestamp = minerInfo.deployments && minerInfo.deployments.initial ? minerInfo.deployments.initial.timestamp : Date.now();
+              let avgTemp = numTemps ? parseInt(totalTemps/ numTemps, 10) : 'n/a';
+              let avgTempStateName = numTemps ? getTempStateName (avgTemp, tempBoundaries) : 'n/a';
+              let {hall = "", rack = "", shelf = "", position = ""} = minerInfo.placement || {};
+              let rackPlacement = `${hall}.${rack}.${shelf}.${position}`;
+              if (!minerInfo.condition) {
+                minerInfo.condition = {timestamp:"", frequency:"", hashRateAvg:""};
+              }
+            
+              let rowData =  `${rackPlacement},${minerInfo.name},${minerInfo.ipAddress}`
+                             + `,${minerInfo.macAddress},${workerName},${accountName},${stratums},${usernames}`
+                             + `,${ (!minerInfo.deployments ? "n/a" : initialTimestamp)},${minerInfo.condition.timestamp}` 
+                             + `,${onlineHours},${minerInfo.condition.frequency},${minerInfo.condition.hashRateAvg},${avgTemp},${avgTempStateName}` 
+              let powerState = (isNaN(minerStatus.frequency) ? "-" : parseInt(minerStatus.frequency)) + ", " + (minerStatus.volts || 0) +"v";
+              let consumption = (minerStatus.consumption || 0) +"w";
+
+              let deployedDay =  'missing';               
+              let priorScanHoursDiff = 'n/a';
+              let deployedTitle = "missing";
+              let lastScanTitle = "never";
+              let lastScan = "never";
+              let latencyTitle = "";
+
+              if (onlineHours < 0.3) {
+                onlineHours = "Barely";
+              }
+
+              if (minerInfo.condition && minerInfo.condition.timestamp) {
+                priorScanHoursDiff =  (Date.now() - minerInfo.condition.timestamp)/(60*60*1000);
+                lastScanTitle = minerInfo.condition.timestamp.toUTCString();
+                
+                if (priorScanHoursDiff > 24 ) {
+                  lastScan = parseInt(priorScanHoursDiff/24, 10) + " days";
+                } else if (priorScanHoursDiff > 1 ){
+                  lastScan = parseInt(priorScanHoursDiff, 10) + " hours";
+                } else if (minerInfo.condition.timestamp) {
+                  lastScan = "recent";
+                }  
+
+                if(/^1\s/.test(lastScan)) {
+                  lastScan = lastScan.replace(/s$/,'');
+                }
+              }
+
+              // Supporting legacy databases
+              if (minerInfo.deployments && initialTimestamp) {
+                deployedDay =  initialTimestamp.toISOString().match(/([^T]+)T/i)[1];               
+                deployedTitle = initialTimestamp.toUTCString();
+              }
+              
+              if (diagnostic && diagnostic.type) {
+                latencyTitle = diagnostic.type + " " + diagnostic.ipAddress;
+              }
+
+              if (lastScan === "recent") {
+                let title = "";
+                // Show fan repair icon when miner currently underperforming and poor fan speed
+                if(hashRatePerf < 10 && (intakeSpeed < 2000 || exhaustSpeed < 2000)) {
+                  title += "Exhaust=" + exhaustSpeed + ", All fans=" + minerStatus.intakeSpeed ;
+                  repairHtml = `<i class="material-icons repair-fan" title="${title}">mode_fan_off</i>`;
+                } 
+
+                // Network connection is not really an issue if the miner is still mining
+                if (errors.length === 1 && /network connection lost/i.test(errors[0]) && hashRatePerf > 10) {
+                  errors = [];
+                }
+                let glyph="";
+                if (coldBoot) {
+                  glyph="fas fa-power-off";
+                  title="Power off miner till PSU fan stops! (" + new Intl.NumberFormat('en-US', {maximumSignificantDigits: 5}).format(hashRateUltimate) + ")";
+                }
+                if (errors.length) {
+                  glyph="fas fa-skull-crossbones";
+                }
+                if (glyph) {
+                  title += (title ? '\n' :'') + errors.join('');
+                  repairHtml = '<i class="miner-repair ' + glyph + '" title="' + title + '"></i>';
+                  if (hashRatePerf < 60) {
+                    glyphName = 'fire';
+                  }
+                }
+              }
+            %>
+            <tr class='miner-tag' id='row_<%=minerInfo.macAddress%>' mac='<%=minerInfo.macAddress%>' ip='<%=minerInfo.ipAddress%>' worker='<%=workerName%>'>
+              <td class='provision-hide large-screen'><input type="checkbox" class='miner-select' value='<%=minerInfo.ipAddress%>' algorithm='<%=minerTyped.hashingAlgorithm%>' accountName='<%=accountName%>' title='<%=rowData%>'></td>
+              <td class='provision-hide logs-msg'><span class="glyphicon glyphicon-<%=glyphName%>" aria-hidden="true"></span>&nbsp;<%- repairHtml %></td>
+              <td class='show-it'><%= !rack ? "Not assigned" : rackPlacement %></td>
+              <td class='miner-worker-name editable' property='workerName'><%= (workerName || "Unknown") %></td>
+              <td class='large-screen miner-account-name'><%= (accountName || "n/a")%></td>
+              <td class='large-screen miner-pool'><%= (minerStatus.poolName || "n/a") %></td>
+              <td class='large-screen miner-type'><span class='pad-left'><%= (minerInfo.model || minerInfo.name) %></span></td>
+              <td class='provision-hide text-right'><span class='pad-right miner-hashrate' data='<%=hashRateAvg%>'><%= (hashRateAvg.toLocaleString() + " (" + hashRatePerf + "%)")%> </span></td>
+              <td class='provision-hide text-right'><span class='pad-right miner-hashrate-daily' data='<%=hashRateDailyAvg%>'><%= hashRateDailyAvg.toLocaleString() %></span></td>
+              <td class='provision-hide large-screen text-right'><span class='pad-right miner-temperatures' title='<%=runtimeState%> <%=minerInfo.lastEffectiveHashingTime%>'><%- tempList %></span></td>
+              <td class='provision-hide large-screen text-right'><span class='pad-right miner-frequency'><%= powerState %></span></td>
+              <td class='provision-hide large-screen text-right'><span class='pad-right miner-consumption' data='<%=consumption%>'><%= consumption.toLocaleString() %></span></td>
+              <td class='provision-hide large-screen text-right'><span class='pad-right miner-error-rate' data='<%=errorRate%>'><%= errorRate %>/m</span></td>
+              <td class='provision-hide large-screen text-right'><span class='pad-right miner-reject-rate' data='<%=rejectRate%>'><%= rejectRate %>%</span></td>
+              <!--td class='large-screen centered'><span title='<%=latencyTitle%>'><%= latency %>ms</span></td-->
+              <td class='large-screen centered'><%= (firmware || "Unversioned") %><i class="ssh-state fas fa-md fa-<%=sshLockedIcon%>"></i></td>
+              <td class='large-screen centered'><span title='<%=lastScanTitle%>'><%= lastScan %></span></td>
+              <td class='large-screen centered miner-online-hours'  data='<%=onlineHours%>'><%= onlineHours %></td>
+              <td class='large-screen centered'>
+                <button class="btn btn-xs btn-primary disabled" onclick="ticketMiner('<%=minerInfo.macAddress%>')" title="Ticket">
+                  <span class="glyphicon glyphicon-flag"></span></button>
+                <button class="btn btn-xs btn-primary" onclick="showKernelLog('<%=minerInfo.ipAddress%>','<%=minerInfo.workerName%>')" title="Kernel Log">
+                  <i class="fas fa-file-download"></i></button>
+                <button class="btn btn-xs btn-primary" onclick="loadMiner('<%=minerInfo.macAddress%>', '<%=minerInfo.ipAddress%>')" 
+                  title="Remote into <%= minerInfo.minerType %>, <%= minerInfo.ipAddress %>, <%= minerInfo.macAddress %>">
+                  <span class="glyphicon glyphicon-edit"></span></button>
+                <button class="btn btn-xs btn-primary" onclick="rebootMiner('<%=minerInfo.ipAddress%>','<%= workerName %>')" title="Reboot">
+                  <span class="glyphicon glyphicon-repeat"></button>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script lang="javascript">
+
+var clientMinerInfoKeys = {}
+function renderDataTableRow(miner) {
+  const {minerInfo, minerStatus, workerName, accountName, glyphName, hashRateAvg, hashRatePerf, runtimeState, deployedTitle
+        , sshEnabled, exhaustSpeed, intakeSpeed, errors, onlineHours, rowData, errorRate, rejectRate, latency, latencyTitle
+        ,hashRateDailyAvg, deployedDay, lastScanTitle, lastScan, tempList, isOnline, firmware, provisionStatus} = miner;
+  let {hall = "", rack = "", shelf = "", position = ""} = minerInfo.placement || {};
+
+  var powerState = (isNaN(minerStatus.frequency) ? "-" : parseInt(minerStatus.frequency)) + ", " + (minerStatus.volts || 0) +"v";
+  var consumption = (minerStatus.consumption || 0) +"w";
+  var rowNode = $(`[id="row_${minerInfo.macAddress}"]`);
+  if (!rowNode.is(":visible")) {
+    return;
+  }
+  let clientKey = Object.values(miner).join("~|~");
+  if (clientMinerInfoKeys[clientKey]) {
+    return;
+  }
+  clientMinerInfoKeys[clientKey] = true;
+  let sshLockedIcon = sshEnabled == "open" ? "lock-open" :(sshEnabled == "locked" ? "lock" : "question-circle") ;
+              
+  let repairHtml = "";
+  if (lastScan === "recent") {
+    let title = "";
+    // Show fan repair icon when miner currently underperforming and poor fan speed
+    let inSpeed = parseInt(intakeSpeed,10);
+    if(hashRatePerf < 10 && (inSpeed < 2000 || exhaustSpeed < 2000)) {
+      title = "Exhaust=" + exhaustSpeed + ", All fans=" + intakeSpeed
+      repairHtml = `&nbsp;<i class="material-icons repair-fan" title="${title}">mode_fan_off</i>`;
+    } 
+
+    // Network connection is not really an issue if the miner is still mining
+    if (errors.length === 1 && /network connection lost/i.test(errors[0]) && hashRatePerf > 10) {
+      errors = [];
+    }
+    if (errors.length) {
+      title += (title ? '\n' :'') + errors.join('');
+      repairHtml = `&nbsp;<i class="material-icons error" title="${title}">toys</i>`;
+      if (hashRatePerf < 60) {
+        glyphName = 'fire';
+      }
+    }
+  }
+
+  var rowMarkup = 
+    `<td class="provision-hide large-screen"><input type="checkbox" class="miner-select" value="${minerInfo.ipAddress}" algorithm="${minerInfo.minerTypeMap.hashingAlgorithm}" accountName="${accountName}" title="${rowData}"></td>` +
+    `<td class="provision-hide logs-msg"><span class="glyphicon glyphicon-${glyphName}" aria-hidden="true"></span>${repairHtml}</td>` +
+    `<td class="show-it">${ !rack ? "Not assigned" : rackPlacement }</td>` +
+    `<td class="miner-worker-name editable" property="workerName">${ (workerName || "Unknown") }</td>` +
+    `<td class="large-screen miner-account-name">${ (accountName || "n/a")}</td>` +
+    `<td class="large-screen miner-pool">${ (minerStatus.poolName || "n/a") }</td>` +
+    `<td class="large-screen miner-type"><span class="pad-left">${ (minerInfo.model ||minerInfo.name)  }</span></td>` +
+    `<td class="provision-hide text-right"><span class="pad-right miner-hashrate" data="${hashRateAvg}">${ (hashRateAvg.toLocaleString() + " (" + hashRatePerf + "%)")} </span></td>` +
+    `<td class='provision-hide text-right'><span class='pad-right miner-hashrate-daily' data="${hashRateDailyAvg}">${hashRateDailyAvg.toLocaleString() }</span></td>` +
+    `<td class="provision-hide large-screen text-right"><span class="pad-right miner-temperatures" title="${runtimeState} ${minerInfo.lastEffectiveHashingTime}">${tempList}</span></td>` +
+    `<td class="provision-hide large-screen text-right"><span class="pad-right miner-frequency">${ powerState }</span></td>` +
+    `<td class="provision-hide large-screen text-right"><span class="pad-right miner-consumption" data="${consumption}">${ consumption }</span></td>` +
+    `<td class="provision-hide large-screen text-right"><span class="pad-right miner-error-rate" data="${errorRate}">${ errorRate }/m</span></td>` +
+    `<td class="provision-hide large-screen text-right"><span class="pad-right miner-reject-rate" data="${rejectRate}" >${ rejectRate }%</span></td>` +
+    // `<td class="large-screen centered"><span title="${latencyTitle}">${ latency }</span></td>` +
+    `<td class="large-screen centered"><span>${ firmware }<i class="ssh-state fas fa-md fa-${sshLockedIcon}"></i></span></td>` +
+    `<td class="large-screen centered"><span title="${lastScanTitle}">${ lastScan }</span></td>` +
+    `<td class="large-screen centered"><span class="miner-online-hours" data="${onlineHours}">${ onlineHours }</span></td>` +
+    `<td class="large-screen centered">` +
+      `<button class="btn btn-xs btn-primary disabled" onclick="ticketMiner('${minerInfo.macAddress}')" title="Ticket">` +
+        `<span class="glyphicon glyphicon-flag"></span></button> ` + 
+      `<button class="btn btn-xs btn-primary" onclick="showKernelLog('${minerInfo.ipAddress}','${ workerName }')" title="Kernel Log">` + 
+        `<i class="fas fa-file-download"></i></button> ` +
+      `<button class="btn btn-xs btn-primary" onclick="loadMiner('${minerInfo.macAddress}','${minerInfo.ipAddress}')" title="Remote into ${ minerInfo.minerType }, ${ minerInfo.ipAddress }, ${ minerInfo.macAddress }">` +
+        `<span class="glyphicon glyphicon-edit"></span></button> ` +
+      `<button class="btn btn-xs btn-primary" onclick="rebootMiner('${minerInfo.ipAddress}','${ workerName }')" title="Reboot">` +
+        `<span class="glyphicon glyphicon-repeat"></button>` +
+    `</td>`;
+  if (rowNode) {
+    rowNode.html(rowMarkup);
+  } else {
+    rowNode = $("#minerInfoDataTable > tbody").append(  `<tr class="miner-tag" id="row_${minerInfo.macAddress}" ip="${minerInfo.ipAddress}" mac="${minerInfo.macAddress}" worker="${workerName}">${rowData}</tr>`);
+  }
+
+  let priorProvisionState = rowNode.attr("provisionClass");
+  if (priorProvisionState) {
+    rowNode.removeClass(priorProvisionState +" fade-original");
+  }
+
+  if (provisionStatus) {
+    rowNode.prependTo("#minerInfoDataTable > tbody");
+    if (provisionStatus !== "configured") {
+      let provisionClass = "provision-" + provisionStatus;
+      rowNode.attr("provisionClass",provisionClass);
+      rowNode.addClass(provisionClass);
+    } else {
+      fadeRow(rowNode);
+    }
+  }
+}
+
+function fadeRow(rowNode, color) {
+  rowNode.addClass("fade-original");
+}
+
+function getTempStateName (temperature, tempBoundaries) {
+  tempBoundaries = tempBoundaries ||  {"hot":90,"warm":80,"mild":70};
+  if (temperature >= tempBoundaries.hot) {
+    return 'hot';
+  } 
+  else if (temperature >= tempBoundaries.warm) {
+    return 'warm';
+  } 
+  else if (temperature >= tempBoundaries.mild) {
+    return 'mild';
+  } 
+  else if (temperature == 0) {
+    return 'dead';
+  } 
+  return 'cool';  
+}          
+
+
+function updateDataTableRow(minerInfo) {
+  let minerStatus = minerInfo.condition || {};
+  let minerPrimeStatus = minerInfo.conditionPrime || {};
+  let {diagnostic = {}} = minerStatus;
+  let tempList = 'n/a';
+  let glyphName = 'ok'
+  let hasDead = false;
+  let hasHot = false;
+  let isOnline = !minerStatus.offlineTimestamp;
+  let runtimeState = minerInfo.runtimeState;
+  if (runtimeState === "hashing") {
+    runtimeState = '';
+  }
+  let offlineTooLong = !isOnline && Date.now() - minerStatus.offlineTimestamp > 3*24*60*60*1000;
+  let hashRateAvg =  parseInt(minerStatus.hashRate || 0); //  minerStatus.hashRateAvg || 
+  let hashRateBestAvg = parseInt(minerPrimeStatus.hashRate || minerPrimeStatus.hashRateAvg || 0);
+  let hashRateDailyAvg = hashRateAvg;
+  if (minerInfo.trends) {
+    const {fine=[], hourly=[], priorHours=[]} = minerInfo.trends;
+    let trendHistory = fine.concat(hourly.concat(priorHours).slice(23)); 
+    hashRateDailyAvg = parseInt(trendHistory.reduce((a,b)=> a +  b.hashRate||0,0)/ trendHistory.length);          
+  }
+  let hashRatePerf = Math.round(hashRateAvg / (hashRateBestAvg || hashRateAvg || 1) * 20) * 5;
+  let stratums = '';
+  let usernames = '';
+  let accountName = minerInfo.accountName;
+  let workerName = minerInfo.workerName;
+  let tempBoundaries = minerInfo.minerTypeMap ? minerInfo.minerTypeMap.tempBoundaries :[];
+  let provisionStatus = minerInfo.provisionStatus;
+  let intakeSpeed = minerStatus.intakeSpeed;
+  let exhaustSpeed = parseInt(minerStatus.exhaustSpeed,10);
+  let errors = minerInfo.logStates && Array.isArray(minerInfo.logStates.errors) ? minerInfo.logStates.errors : [];
+  let onlineHours = !minerStatus.elapsed ? "Asleep" : parseInt(minerStatus.elapsed/60/60*10)/10;
+  let hardwareErrors = minerStatus?.hardwareErrors?.[0] ? minerStatus.hardwareErrors : [0];
+  let errorCount = hardwareErrors.reduce((a,b) => parseInt(a,10)+parseInt(b,10))
+  let errorRate  = parseInt(errorCount/((minerStatus.elapsed || 1)/60)); 
+  let rejectRate =  parseInt((minerStatus.rejected || 0)/(minerStatus.accepted || 1)*1000)/10; 
+  let latency =  parseInt((diagnostic.latency || 0)*10)/10; 
+  
+  // TODO. Handle in query on server. Allow for bulk deactivating
+  if (offlineTooLong) {
+    // return false;
+  }
+  if (minerStatus.pools && Array.isArray(minerStatus.pools) ) {
+    for(var ipool=0; ipool < 3; ipool++){
+      if (minerStatus.pools[ipool] && minerStatus.pools[ipool].url) {
+        stratums += minerStatus.pools[ipool].url + ";";
+        usernames += minerStatus.pools[ipool].user + ";";
+      }
+    }
+  }
+
+  let totalTemps = 0
+  let numTemps = 0;  
+  if (!runtimeState && minerStatus.temperatures && Array.isArray(minerStatus.temperatures) ) {
+    numTemps = minerStatus.temperatures.length;  
+    tempList =  minerStatus.temperatures.map(temp => {
+      let temperature = parseInt(temp, 10);
+      let tempStateName = getTempStateName (temperature, tempBoundaries);
+      let classTemp = `temp-${tempStateName}`;
+      totalTemps += temperature;
+      if (tempStateName  == 'hot') {
+        hasHot = true;
+      } 
+      else if (tempStateName  == 'dead') {
+        hasDead = true;
+        numTemps --;
+      } 
+      return "<span class='" + classTemp + "'>" + temperature + "</span>";
+    }).join("/");
+    
+    if (hashRatePerf < 60) {
+      glyphName = 'fire';
+    } else if (hasHot || hasDead || hashRatePerf < 85) {
+      glyphName = 'warning-sign';
+    }
+  } else {
+    tempList = runtimeState || "offline";            
+  }
+
+  let initialTimestamp = minerInfo.deployments && minerInfo.deployments.initial ? minerInfo.deployments.initial.timestamp : Date.now();
+  let avgTemp = numTemps ? parseInt(totalTemps/ numTemps, 10) : 'n/a';
+  let avgTempStateName = numTemps ? getTempStateName (avgTemp, tempBoundaries) : 'n/a';
+  let {hall = "", rack = "", shelf = "", position = ""} = minerInfo.placement || {};
+  let rackPlacement= `${hall}.${rack}.${shelf}.${position}`;
+  if (!minerInfo.condition) {
+    minerInfo.condition = {timestamp:"", frequency:"", hashRateAvg:""};
+  }
+  let rowData =  `${rackPlacement},${minerInfo.name},${minerInfo.ipAddress}`
+                  + `,${minerInfo.macAddress},${workerName},${accountName},${stratums},${usernames}`
+                  + `,${ (!minerInfo.deployments ? "n/a" : initialTimestamp)},${minerInfo.condition.timestamp}` 
+                  + `,${onlineHours},${minerInfo.condition.frequency},${minerInfo.condition.hashRateAvg},${avgTemp},${avgTempStateName}` 
+
+  let deployedDay =  'missing';               
+  let priorScanHoursDiff = 'n/a';
+  let deployedTitle = "missing";
+  let lastScanTitle = "never";
+  let lastScan = "never";
+  let latencyTitle = "";
+
+  if (onlineHours < 0.3) {
+    onlineHours = "Barely";
+  }
+  if (minerInfo.condition && minerInfo.condition.timestamp) {
+    priorScanHoursDiff =  (Date.now() - minerInfo.condition.timestamp)/(60*60*1000);
+    lastScanTitle = !minerInfo.condition.timestamp ? "n/a" : new Date(minerInfo.condition.timestamp).toUTCString();
+    
+    if (priorScanHoursDiff > 24 ) {
+      lastScan = parseInt(priorScanHoursDiff/24, 10) + " days";
+    } else if (priorScanHoursDiff > 1 ){
+      lastScan = parseInt(priorScanHoursDiff, 10) + " hours";
+    } else if (minerInfo.condition.timestamp) {
+      lastScan = "recent";
+    }  
+
+    if(/^1\s/.test(lastScan)) {
+      lastScan = lastScan.replace(/s$/,'');
+    }
+  }
+
+  // Supporting legacy databases
+  if (minerInfo.deployments && initialTimestamp) {
+    deployedDay =  new Date(initialTimestamp).toISOString().match(/([^T]+)T/i)[1];               
+    deployedTitle = new Date(initialTimestamp).toUTCString();
+  }
+
+  if (diagnostic && diagnostic.type) {
+    latencyTitle = diagnostic.type + " " + diagnostic.ipAddress;
+  }
+
+  let fileSystemDate = new Date(minerInfo.fileSystemTimestamp)
+  firmware = fileSystemDate.getFullYear() > 2015 ? (fileSystemDate).toLocaleDateString("en-US") : minerInfo.systemLogicVersion || "Unversioned";
+  const miner = {minerInfo, minerStatus, workerName, accountName, glyphName, hashRateAvg, hashRatePerf, runtimeState
+              , exhaustSpeed, intakeSpeed, errors, onlineHours, rowData, errorRate, rejectRate, latency, latencyTitle
+              ,hashRateDailyAvg, deployedTitle, deployedDay, lastScanTitle, lastScan, tempList, isOnline, firmware, provisionStatus};
+  renderDataTableRow(miner);
+}
+
+function renderChart(hashRateSeries){
+  var options = {
+    width: '640px',
+    height: '200px'
+  };
+
+  var aDayAgo = xAxisFormat(Date.now()-24*60*60*1000);
+  var isComplete = hashRateSeries.find(pt => pt.x < aDayAgo);
+  if (!isComplete || !hashRateSeries.length) {
+    hashRateSeries.splice(0,0,{x:aDayAgo, y:0});
+  }
+
+  var seriesData = {
+    series: [{
+      name: 'hash-rate-series',
+      data: hashRateSeries
+    }]
+  };
+
+  var chart = new Chartist.Line('.ct-chart', seriesData, options);
+}
+
+var chartCache = {}
+function xAxisFormat(x) {return parseInt(x/360000)/10;};
+function chartMiner(macAddress) {
+  var timespan = 1*60*1000;
+  var now = Date.now();
+  var cachedSeries = chartCache[macAddress];
+  if (cachedSeries && cachedSeries.timestamp > now - timespan) {
+    // Fetch is still in progress
+    if (!cachedSeries.hashRateSeries) {
+      return;
+    }
+    return renderChart(cachedSeries.hashRateSeries);
+  }
+  chartCache[macAddress] = {timestamp: now, hashRateSeries:null};
+  var url = `/api/minerInfos?filter[where][macAddress]=${macAddress}&filter[fields][trends]=true`;
+  renderChart([{x:0, y:0}]);
+  return fetch(url,{
+    credentials: 'same-origin'
+  }).then((response) => {
+    return response.json();
+  }).then((data) => {
+    let hashRateSeries = [];
+    if (!data[0].trends) {
+      hashRateSeries.push({x:0, y:0});
+    } else {
+      const {fine, hourly, priorHours=[]} = data[0].trends;
+      const now = Date.now()
+      priorHours.concat(hourly,fine).slice(-36).forEach(pt => {hashRateSeries.push({x:xAxisFormat(pt.x-now), y:pt.hashRate})});
+    }
+
+    chartCache[macAddress].hashRateSeries = hashRateSeries;
+    renderChart(hashRateSeries);
+  });
+}
+</script>

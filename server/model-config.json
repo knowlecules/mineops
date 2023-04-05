@@ -1,0 +1,60 @@
+{
+  "_meta": {
+    "sources": [
+      "loopback/common/models",
+      "loopback/server/models",
+      "../common/models",
+      "./models"
+    ],
+    "mixins": [
+      "loopback/common/mixins",
+      "loopback/server/mixins",
+      "../node_modules/@aliatech/loopback-mongo-aggregate-mixin/lib",
+      "../common/mixins",
+      "./mixins"
+    ]
+  },
+  "User": {
+    "dataSource": "memoryDs",
+    "public": true
+  },
+  "AccessToken": {
+    "dataSource": "memoryDs",
+    "public": false
+  },
+  "ACL": {
+    "dataSource": "memoryDs",
+    "public": false
+  },
+  "RoleMapping": {
+    "dataSource": "memoryDs",
+    "public": false
+  },
+  "Role": {
+    "dataSource": "memoryDs",
+    "public": false
+  },
+  "Email": {
+    "dataSource": "emailDs"
+  },
+  "machineType": {
+    "dataSource": "memoryDs",
+    "public": true
+  },
+  "wallet": {
+    "dataSource": "memoryDs",
+    "public": true
+  },
+  "minerInfo": {
+    "dataSource": "localDs",
+    "public": true
+  },
+  "pool": {
+    "dataSource": "memoryDs",
+    "public": true
+  },
+  "dataCenterSettings": {
+    "dataSource": "localDs",
+    "public": true
+  }
+}
