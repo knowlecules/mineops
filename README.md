@@ -1,4 +1,4 @@
-# MineOps-api
+# MineOps
 
 ## About
 
