@@ -145,7 +145,7 @@ LOG_LEVEL_OPTIONS= ERROR, WARNING, LOG, INFO, DEBUG, ALL
 LOG_LEVEL=INFO
 MESSAGE_SERVICES=
 _NETWORK_DIAGNOSTIC={"type":"ping", "ipAddress":"8.8.8.8"}
-_MONGO_URL=mongodb+srv://mineops_admin:GinRLvppH35bbe6@mineops.av05u.mongodb.net/mineopsCentral?retryWrites=true&w=majority
+_MONGO_URL=mongodb+srv://mineops_admin:secretkey.mongodb.net/mineopsCentral?retryWrites=true&w=majority
 DEBUG=loopback:zzzdatasource
 UNSAFE_EDITS=true;  
 ```
